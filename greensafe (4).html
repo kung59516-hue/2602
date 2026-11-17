@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그린세이프 (GreenSafe) - 기후 위기 예방 및 대응 올인원 앱</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans KR & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome 아이콘 로드 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        forest: {
+                            50: '#f2f7f4',
+                            100: '#e0ede6',
+                            200: '#c2dbce',
+                            300: '#98c1ad',
+                            400: '#6aa187',
+                            500: '#478468',
+                            600: '#356952',
+                            700: '#2b5443',
+                            800: '#1b4332', // 메인 다크 그린
+                            900: '#081c15', // 딥 다크 그린
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f4f7f5;
+            color: #081c15;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(27, 67, 50, 0.08), 0 8px 10px -6px rgba(27, 67, 50, 0.04);
+        }
+        .btn-press:active {
+            transform: scale(0.97);
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            70% { transform: scale(1.15); opacity: 0; }
+            100% { transform: scale(0.95); opacity: 0; }
+        }
+        .animate-pulse-ring::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 9999px;
+            border: 3px solid currentColor;
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pb-24">
+
+    <!-- 상단 헤더 (다크 그린 포인트) -->
+    <header class="w-full bg-forest-800 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-lg mx-auto px-4 py-3.5 space-y-2.5">
+            <!-- 최상단: 왼쪽 상단 다국어 번역 선택기 -->
+            <div class="flex items-center justify-between border-b border-forest-700/70 pb-2">
+                <div class="relative inline-flex items-center">
+                    <i class="fa-solid fa-globe text-emerald-300 text-xs mr-1.5"></i>
+                    <select id="lang-select" onchange="changeLanguage(this.value)" aria-label="언어 선택" class="appearance-none bg-forest-900/90 text-emerald-100 text-[11px] font-extrabold pl-2 pr-5 py-1 rounded-lg border border-forest-600 focus:outline-none focus:border-emerald-400 cursor-pointer">
+                        <option value="ko" selected>🇰🇷 한국어</option>
+                        <option value="en">🇺🇸 English</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="zh">🇨🇳 中文</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down text-[8px] text-forest-300 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                </div>
+                <span class="text-[10px] text-forest-300 font-semibold" id="header-sub-badge">Universal Climate Safety App</span>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 bg-white text-forest-800 rounded-xl flex items-center justify-center text-lg font-black shadow-sm shrink-0">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1.5">
+                            <h1 class="text-lg font-extrabold tracking-tight leading-none" id="app-title">그린세이프</h1>
+                            <span class="px-1.5 py-0.5 bg-forest-600 text-[10px] font-bold rounded text-emerald-200" id="app-badge">기상청 방재연계</span>
+                        </div>
+                        <p class="text-[11px] text-forest-200 font-medium mt-0.5" id="current-date-display">실시간 계절·지역 맞춤형 재난 대응</p>
+                    </div>
+                </div>
+
+                <!-- 대한민국 전국 시·도 및 구체적 시·군·구 2단계 선택 드롭다운 -->
+                <div class="flex items-center space-x-1.5">
+                    <div class="relative">
+                        <select id="sido-select" onchange="changeSido(this.value)" aria-label="시·도 선택" class="appearance-none bg-forest-900 text-white text-xs font-extrabold pl-2.5 pr-6 py-2 rounded-xl border border-forest-600 focus:outline-none focus:border-emerald-400 cursor-pointer shadow-sm">
+                            <option value="jeonnam" selected>전라남도</option>
+                            <option value="seoul">서울특별시</option>
+                            <option value="gwangju">광주광역시</option>
+                            <option value="jeonbuk">전북특별자치도</option>
+                            <option value="busan">부산광역시</option>
+                            <option value="daegu">대구광역시</option>
+                            <option value="incheon">인천광역시</option>
+                            <option value="daejeon">대전광역시</option>
+                            <option value="ulsan">울산광역시</option>
+                            <option value="sejong">세종특별자치시</option>
+                            <option value="gyeonggi">경기도</option>
+                            <option value="gangwon">강원특별자치도</option>
+                            <option value="chungbuk">충청북도</option>
+                            <option value="chungnam">충청남도</option>
+                            <option value="gyeongbuk">경상북도</option>
+                            <option value="gyeongnam">경상남도</option>
+                            <option value="jeju">제주특별자치도</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down text-[9px] text-forest-300 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    <div class="relative">
+                        <select id="city-select" onchange="changeCity(this.value)" aria-label="구체적 시·군·구 선택" class="appearance-none bg-white text-forest-900 text-xs font-black pl-2.5 pr-6 py-2 rounded-xl border border-forest-300 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-sm">
+                            <!-- 자바스크립트에서 자동 렌더링 -->
+                        </select>
+                        <i class="fa-solid fa-chevron-down text-[9px] text-forest-700 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 현재 실제 계절 날씨(기본) vs 계절별 재난 시뮬레이션 전환 바 -->
+            <div class="flex items-center justify-between bg-forest-900/80 p-1 rounded-xl border border-forest-700">
+                <button type="button" onclick="setWeatherMode('live')" id="btn-live" class="flex-1 py-1.5 rounded-lg text-[11px] font-extrabold transition-all bg-white text-forest-900 shadow-sm cursor-pointer">
+                    🍂 현재(실시간)
+                </button>
+                <button type="button" onclick="setWeatherMode('heat')" id="btn-heat" class="flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all text-forest-200 hover:text-white cursor-pointer">
+                    ☀️ 폭염(모의)
+                </button>
+                <button type="button" onclick="setWeatherMode('rain')" id="btn-rain" class="flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all text-forest-200 hover:text-white cursor-pointer">
+                    ☔ 폭우(모의)
+                </button>
+                <button type="button" onclick="setWeatherMode('snow')" id="btn-snow" class="flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all text-forest-200 hover:text-white cursor-pointer">
+                    ❄️ 폭설(모의)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 컨테이너 -->
+    <main class="w-full max-w-lg px-4 pt-5 space-y-6">
+
+        <!-- 1. [대응] 오늘의 기후 신호등 & 기상청 포털 상세 데이터 카드 -->
+        <section aria-label="오늘의 기후 신호등" class="bg-white rounded-3xl p-6 card-shadow border border-forest-100">
+            <div class="flex items-center justify-between mb-3 gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span id="station-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-forest-100 text-forest-800">
+                        <i class="fa-solid fa-tower-broadcast mr-1.5"></i> 목포 기상대 (연산동 관측소)
+                    </span>
+                    <span id="mode-status-pill" class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
+                        현재 계절 실시간
+                    </span>
+                </div>
+                <!-- 실제 3색 신호등 인디케이터 (🔴위험 / 🟡주의 / 🟢안전) -->
+                <div class="flex items-center space-x-1.5 bg-forest-900 px-2.5 py-1.5 rounded-full shadow-inner shrink-0" title="기후 위험도 신호등">
+                    <span id="lamp-red" class="w-3.5 h-3.5 rounded-full bg-red-950/60 transition-all"></span>
+                    <span id="lamp-yellow" class="w-3.5 h-3.5 rounded-full bg-amber-950/60 transition-all"></span>
+                    <span id="lamp-green" class="w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] transition-all"></span>
+                </div>
+            </div>
+
+            <!-- 신호등 직관적 배너 -->
+            <div id="signal-box" class="rounded-2xl p-5 bg-forest-50 border-2 border-forest-200 transition-colors duration-300">
+                <div class="flex items-center space-x-4">
+                    <!-- 신호등 원형 아이콘 -->
+                    <div id="signal-icon-wrap" class="relative w-16 h-16 rounded-full bg-forest-700 text-white flex items-center justify-center text-3xl shrink-0 shadow-md">
+                        <i id="signal-icon" class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span id="signal-badge" class="px-2.5 py-0.5 rounded-md text-xs font-black bg-emerald-600 text-white">🟢 기후 안전</span>
+                            <span id="signal-title" class="text-lg font-black text-forest-900">늦가을 특보 없음 (평온)</span>
+                        </div>
+                        <p id="signal-desc" class="text-sm font-semibold text-forest-800 mt-1.5 leading-snug">
+                            [목포시 실시간] 목포 앞바다 맑고 선선함 · 해안가 강풍·일교차 주의. 현재 기상 특보가 없는 평온한 가을 날씨입니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 기상청 기상자료개방포털(data.kma.go.kr) 상세 관측 지표 4칸 그리드 -->
+                <div class="mt-4 bg-white/90 backdrop-blur-sm rounded-xl p-3 border border-black/5">
+                    <div class="grid grid-cols-4 gap-2 text-center divide-x divide-forest-100">
+                        <div>
+                            <p class="text-[11px] font-bold text-forest-600" id="lbl-temp">현재 기온</p>
+                            <p id="kma-temp" class="text-sm font-black text-forest-900 mt-0.5">13.8°C</p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-forest-600" id="lbl-feels">체감 온도</p>
+                            <p id="kma-feels" class="text-sm font-black text-forest-700 mt-0.5">12.4°C</p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-forest-600" id="kma-precip-label">강수량</p>
+                            <p id="kma-precip" class="text-sm font-black text-forest-900 mt-0.5">0.0mm</p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-forest-600" id="lbl-wind">습도·풍속</p>
+                            <p id="kma-wind" class="text-sm font-black text-forest-900 mt-0.5">55%·3.5m/s</p>
+                        </div>
+                    </div>
+                    <p id="kma-source-text" class="text-[10px] text-right text-forest-500 font-medium mt-1.5">
+                        출처: 기상청 기상자료개방포털 (data.kma.go.kr) · 전라남도 목포시 관측
+                    </p>
+                </div>
+
+                <!-- NEW: 날씨 맞춤 옷차림 및 필수 준비물 추천 배너 -->
+                <div id="recommendation-banner" class="mt-4 bg-white/95 rounded-xl p-3.5 border border-forest-200 shadow-sm flex items-start space-x-3">
+                    <div id="rec-icon-wrap" class="w-10 h-10 rounded-xl bg-forest-100 text-forest-800 flex items-center justify-center text-lg shrink-0 mt-0.5">
+                        <i id="rec-main-icon" class="fa-solid fa-shirt"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-forest-900" id="lbl-rec-title">오늘의 맞춤 옷차림 & 필수품</span>
+                            <span id="rec-tag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">가을 겉옷 필수</span>
+                        </div>
+                        <p id="rec-outfit" class="text-xs font-bold text-forest-800 mt-1">
+                            추천 옷차림: 가디건, 자켓, 얇은 니트, 긴바지 (일교차 대비 겉옷 지참)
+                        </p>
+                        <p id="rec-items" class="text-xs font-semibold text-forest-600 mt-0.5">
+                            필수 준비물: ☀️ 썬크림(자외선 차단), 💧 텀블러, 모자
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 1클릭 즉시 대응 버튼 -->
+                <div class="mt-4 pt-3 border-t border-black/10 grid grid-cols-2 gap-2.5">
+                    <button type="button" onclick="openActionModal()" class="btn-press bg-forest-800 hover:bg-forest-900 text-white font-bold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center shadow-sm transition cursor-pointer">
+                        <i class="fa-solid fa-house-chimney-medical mr-2"></i>
+                        <span id="action-btn-1">지역 안전쉼터 보기</span>
+                    </button>
+                    <button type="button" onclick="speakGuidance()" class="btn-press bg-white hover:bg-forest-50 text-forest-900 border-2 border-forest-800 font-bold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center transition cursor-pointer">
+                        <i class="fa-solid fa-volume-high mr-2 text-forest-700"></i>
+                        <span id="action-btn-2">행동요령 듣기</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. [예방] 나의 탄소 감축 나무 & 누적 성과 대시보드 -->
+        <section aria-label="나의 기후 예방 성과" class="bg-forest-800 text-white rounded-3xl p-6 card-shadow relative overflow-hidden">
+            <i class="fa-solid fa-seedling absolute -right-4 -bottom-4 text-8xl text-forest-700/40 pointer-events-none"></i>
+            
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <span class="text-xs font-bold text-forest-200 uppercase tracking-wider" id="lbl-sdg-sub">SDGs 13 기후행동 누적 기록</span>
+                    <h2 class="text-xl font-black mt-0.5" id="lbl-perf-title">나의 탄소 감축 성과</h2>
+                </div>
+                <button type="button" onclick="resetProgress()" id="btn-reset" class="text-xs text-forest-200 hover:text-white underline font-medium cursor-pointer">
+                    초기화
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 relative z-10">
+                <div class="bg-forest-900/60 backdrop-blur-sm rounded-2xl p-4 border border-forest-700">
+                    <p class="text-xs text-forest-200 font-semibold" id="lbl-co2">줄인 온실가스 (CO₂)</p>
+                    <div class="flex items-baseline space-x-1 mt-1">
+                        <span id="total-co2" class="text-3xl font-black text-white">0.0</span>
+                        <span class="text-sm font-bold text-forest-300">kg</span>
+                    </div>
+                </div>
+                <div class="bg-forest-900/60 backdrop-blur-sm rounded-2xl p-4 border border-forest-700">
+                    <p class="text-xs text-forest-200 font-semibold" id="lbl-trees">심은 어린 소나무 효과</p>
+                    <div class="flex items-baseline space-x-1 mt-1">
+                        <span id="total-trees" class="text-3xl font-black text-emerald-300">0.0</span>
+                        <span class="text-sm font-bold text-forest-300" id="lbl-tree-unit">그루</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: 일주일 기후행동 실천 도장판 (월~일 7일 스탬프) -->
+            <div class="mt-4 bg-forest-900/70 backdrop-blur-sm rounded-2xl p-4 border border-forest-700 relative z-10">
+                <div class="flex items-center justify-between mb-2.5">
+                    <span class="text-xs font-extrabold text-emerald-200 flex items-center" id="lbl-stamp-title">
+                        <i class="fa-solid fa-stamp mr-1.5"></i> 이번 주 기후 지킴이 도장판
+                    </span>
+                    <span id="weekly-stamp-count" class="text-xs font-black bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30">
+                        주간 0 / 7회 달성
+                    </span>
+                </div>
+                <div id="weekly-stamp-board" class="grid grid-cols-7 gap-1.5 text-center">
+                    <!-- 자바스크립트에서 월~일 7일 도장판 렌더링 -->
+                </div>
+            </div>
+
+            <div class="mt-4 relative z-10">
+                <div class="flex justify-between text-xs font-bold text-forest-200 mb-1.5">
+                    <span id="lbl-goal">오늘의 기후 지킴이 달성률</span>
+                    <span id="progress-text">0 / 3 완료</span>
+                </div>
+                <div class="w-full h-3 bg-forest-950 rounded-full overflow-hidden p-0.5">
+                    <div id="progress-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. [예방] 오늘의 날씨 맞춤 1클릭 탄소 감축 미션 -->
+        <section aria-label="오늘의 기후 미션" class="bg-white rounded-3xl p-6 card-shadow border border-forest-100">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-lg font-black text-forest-900" id="lbl-mission-title">오늘의 기후 미션 1클릭</h2>
+                    <p class="text-xs text-forest-600 font-medium mt-0.5" id="lbl-mission-sub">실천한 항목을 누르면 탄소 감축량과 도장이 기록됩니다</p>
+                </div>
+                <span id="mission-season-tag" class="px-3 py-1 rounded-full text-xs font-bold bg-forest-800 text-white shrink-0">
+                    늦가을·일상 미션
+                </span>
+            </div>
+
+            <div id="mission-list" class="space-y-3">
+                <!-- 자바스크립트에서 렌더링 -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 알림 토스트 메시지 -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-forest-900 text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center space-x-3 opacity-0 pointer-events-none transition-all duration-300 transform translate-y-4 w-[90%] max-w-md border border-forest-700">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+        <p id="toast-msg" class="text-sm font-bold leading-snug">탄소 감축 실천이 기록되었습니다!</p>
+    </div>
+
+    <!-- 통합 안전쉼터 & 친환경 추천 모달 -->
+    <div id="info-modal" class="fixed inset-0 z-50 bg-forest-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-forest-100 max-h-[88vh] flex flex-col">
+            <div class="flex justify-between items-center mb-3 shrink-0">
+                <span class="px-3 py-1 bg-forest-100 text-forest-800 rounded-full text-xs font-extrabold">지역 거점 찾기 & 추천</span>
+                <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-forest-50 text-forest-800 flex items-center justify-center hover:bg-forest-100 cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <h3 id="modal-title" class="text-xl font-black text-forest-900 shrink-0">우리 동네 안전·그린 장소</h3>
+            <p id="modal-subtitle" class="text-sm text-forest-600 mt-1 shrink-0">현재 위치 기준 가장 가까운 시설을 추천합니다.</p>
+            
+            <!-- 모달 내 탭 전환 (안전쉼터 vs 친환경·제로웨이스트 추천) -->
+            <div class="grid grid-cols-2 gap-2 bg-forest-50 p-1.5 rounded-2xl mt-3.5 shrink-0">
+                <button type="button" onclick="switchModalTab('shelter')" id="modal-tab-shelter" class="py-2 rounded-xl text-xs font-extrabold bg-forest-800 text-white shadow-sm transition cursor-pointer">
+                    ❄️ 대피·무더위쉼터
+                </button>
+                <button type="button" onclick="switchModalTab('eco')" id="modal-tab-eco" class="py-2 rounded-xl text-xs font-extrabold text-forest-700 hover:bg-forest-100 transition cursor-pointer">
+                    ♻️ 친환경·제로웨이스트
+                </button>
+            </div>
+
+            <!-- 스크롤 가능한 추천 리스트 & 상세 안내 영역 -->
+            <div id="modal-list-container" class="mt-3.5 overflow-y-auto space-y-2.5 pr-1 flex-1">
+                <!-- 자바스크립트에서 동적 렌더링 -->
+            </div>
+
+            <!-- 하단 닫기 버튼 -->
+            <div class="mt-4 pt-3 border-t border-forest-100 shrink-0">
+                <button type="button" onclick="closeModal()" class="w-full btn-press bg-forest-800 hover:bg-forest-900 text-white font-extrabold py-3.5 px-4 rounded-xl text-sm transition cursor-pointer">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 전역 상태 및 전국 17개 시·도 및 상세 시·군·구 기상청 데이터베이스
+        // ==========================================
+        let currentLang = 'ko';
+        let currentSido = 'jeonnam';
+        let currentCity = 'muan';
+        let currentMode = 'live';
+        let currentModalTab = 'shelter';
+        let userCoords = null; // 사용자의 실제 위도/경도 저장 { lat, lon }
+        let completedMissions = JSON.parse(localStorage.getItem('greensafe_missions')) || {};
+        // 일주일(월~일) 도장판 기록 저장 객체 { mon: true, tue: false, ... }
+        let weeklyStamps = JSON.parse(localStorage.getItem('greensafe_weekly_stamps')) || {};
+
+        // 다국어 번역 사전 (한국어 / English / 日本語 / 中文)
+        const i18nDict = {
+            ko: {
+                appTitle: "그린세이프",
+                appBadge: "기상청 방재연계",
+                btnLive: "🍂 현재(실시간)",
+                btnHeat: "☀️ 폭염(모의)",
+                btnRain: "☔ 폭우(모의)",
+                btnSnow: "❄️ 폭설(모의)",
+                lblTemp: "현재 기온",
+                lblFeels: "체감 온도",
+                lblWind: "습도·풍속",
+                lblRecTitle: "오늘의 맞춤 옷차림 & 필수품",
+                actionBtn2: "행동요령 듣기",
+                lblSdgSub: "SDGs 13 기후행동 누적 기록",
+                lblPerfTitle: "나의 탄소 감축 성과",
+                btnReset: "초기화",
+                lblCo2: "줄인 온실가스 (CO₂)",
+                lblTrees: "심은 어린 소나무 효과",
+                lblTreeUnit: "그루",
+                lblStampTitle: "이번 주 기후 지킴이 도장판",
+                lblGoal: "오늘의 기후 지킴이 달성률",
+                lblMissionTitle: "오늘의 기후 미션 1클릭",
+                lblMissionSub: "실천한 항목을 누르면 탄소 감축량과 도장이 기록됩니다",
+                lblPlaceTitle: "가까운 안전·그린 장소",
+                lblPlaceSub: "행정안전부 공공데이터 기반 주변 시설 안내",
+                tabShelter: "❄️ 대피·무더위쉼터",
+                tabEco: "♻️ 친환경·제로웨이스트",
+                days: ['월', '화', '수', '목', '금', '토', '일'],
+                stampWeeklyFmt: (cnt) => `주간 ${cnt} / 7일 달성`,
+                modes: {
+                    live: { badge: "🟢 기후 안전", title: "늦가을 특보 없음 (평온)", btn1: "지역 안전쉼터 보기", missionTag: "늦가을·일상 탄소감축 미션", recTag: "가을 겉옷 필수" },
+                    heat: { badge: "🔴 폭염 경보(모의)", title: "폭염 위기 대응 시뮬레이션", btn1: "무더위쉼터 찾기", missionTag: "여름철 폭염 대비 미션", recTag: "자외선·온열질환 주의" },
+                    rain: { badge: "🟡 호우 주의(모의)", title: "집중호우 대응 시뮬레이션", btn1: "침수 대피소 찾기", missionTag: "장마철 폭우 대비 미션", recTag: "방수 용품 필수" },
+                    snow: { badge: "🔴 대설 경보(모의)", title: "폭설·한파 대응 시뮬레이션", btn1: "한파·대설쉼터 찾기", missionTag: "겨울철 폭설 대비 미션", recTag: "한파·빙판길 대비" }
+                }
+            },
+            en: {
+                appTitle: "GreenSafe",
+                appBadge: "KMA Disaster Sync",
+                btnLive: "🍂 Live",
+                btnHeat: "☀️ Heatwave",
+                btnRain: "☔ Heavy Rain",
+                btnSnow: "❄️ Heavy Snow",
+                lblTemp: "Temp",
+                lblFeels: "Feels Like",
+                lblWind: "Humid·Wind",
+                lblRecTitle: "Today's Outfit & Essentials",
+                actionBtn2: "Voice Guide",
+                lblSdgSub: "SDGs 13 Climate Action Log",
+                lblPerfTitle: "My Carbon Reduction",
+                btnReset: "Reset",
+                lblCo2: "Reduced CO₂",
+                lblTrees: "Pine Trees Planted",
+                lblTreeUnit: "trees",
+                lblStampTitle: "Weekly Eco Stamp Board",
+                lblGoal: "Daily Climate Guardian Progress",
+                lblMissionTitle: "1-Click Eco Missions",
+                lblMissionSub: "Tap a completed action to earn a stamp & save CO₂",
+                lblPlaceTitle: "Nearby Shelters & Eco Spots",
+                lblPlaceSub: "Public safety & zero-waste locations near you",
+                tabShelter: "❄️ Safety Shelters",
+                tabEco: "♻️ Eco & Zero-Waste",
+                days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                stampWeeklyFmt: (cnt) => `${cnt} / 7 Days Stamped`,
+                modes: {
+                    live: { badge: "🟢 Safe Weather", title: "No Weather Advisories", btn1: "Find Local Shelter", missionTag: "Daily Low-Carbon Missions", recTag: "Light Jacket" },
+                    heat: { badge: "🔴 Heat Warning", title: "Heatwave Simulation", btn1: "Cooling Shelters", missionTag: "Heatwave Action Missions", recTag: "UV & Heat Care" },
+                    rain: { badge: "🟡 Rain Advisory", title: "Heavy Rain Simulation", btn1: "Flood Shelters", missionTag: "Heavy Rain Action Missions", recTag: "Rain Gear Needed" },
+                    snow: { badge: "🔴 Snow Warning", title: "Heavy Snow Simulation", btn1: "Warming Shelters", missionTag: "Winter Snow Action Missions", recTag: "Cold & Ice Care" }
+                }
+            },
+            ja: {
+                appTitle: "グリーンセーフ",
+                appBadge: "気象庁防災連携",
+                btnLive: "🍂 現在(実況)",
+                btnHeat: "☀️ 猛暑(模擬)",
+                btnRain: "☔ 豪雨(模擬)",
+                btnSnow: "❄️ 大雪(模擬)",
+                lblTemp: "現在の気温",
+                lblFeels: "体感温度",
+                lblWind: "湿度·風速",
+                lblRecTitle: "今日の服装＆必需品ガイド",
+                actionBtn2: "音声ガイド",
+                lblSdgSub: "SDGs 13 気候変動アクション記録",
+                lblPerfTitle: "マイCO₂削減の成果",
+                btnReset: "リセット",
+                lblCo2: "削減した温室効果ガス",
+                lblTrees: "植樹した松の木効果",
+                lblTreeUnit: "本",
+                lblStampTitle: "今週のエコ実践スタンプ帳",
+                lblGoal: "今日の気候サポーター達成率",
+                lblMissionTitle: "ワンクリック環境ミッション",
+                lblMissionSub: "実践した項目をタップしてスタンプを獲得しましょう",
+                lblPlaceTitle: "近くの避難所・エコスポット",
+                lblPlaceSub: "公共データに基づく周辺安全・環境施設案内",
+                tabShelter: "❄️ 避難所・シェルター",
+                tabEco: "♻️ エコ・ゼロウェイスト",
+                days: ['月', '火', '水', '木', '金', '土', '日'],
+                stampWeeklyFmt: (cnt) => `週間 ${cnt} / 7日 達成`,
+                modes: {
+                    live: { badge: "🟢 気候安全", title: "気象警報なし（穏やか）", btn1: "地域の安全避難所", missionTag: "日常の脱炭素ミッション", recTag: "羽織りもの必須" },
+                    heat: { badge: "🔴 猛暑警報(模擬)", title: "猛暑危機対応シミュレーション", btn1: "クーリングシェルター", missionTag: "猛暑対策ミッション", recTag: "紫外線・熱中症注意" },
+                    rain: { badge: "🟡 大雨注意(模擬)", title: "集中豪雨対応シミュレーション", btn1: "浸水避難所を探す", missionTag: "豪雨対策ミッション", recTag: "防水グッズ必須" },
+                    snow: { badge: "🔴 大雪警報(模擬)", title: "大雪・寒波対応シミュレーション", btn1: "防寒シェルターを探す", missionTag: "大雪対策ミッション", recTag: "防寒・凍結注意" }
+                }
+            },
+            zh: {
+                appTitle: "绿色守护 (GreenSafe)",
+                appBadge: "气象厅防灾联动",
+                btnLive: "🍂 当前(实时)",
+                btnHeat: "☀️ 高温(模拟)",
+                btnRain: "☔ 暴雨(模拟)",
+                btnSnow: "❄️ 暴雪(模拟)",
+                lblTemp: "当前气温",
+                lblFeels: "体感温度",
+                lblWind: "湿度·风速",
+                lblRecTitle: "今日穿搭与必备物品推荐",
+                actionBtn2: "语音播报",
+                lblSdgSub: "SDGs 13 气候行动累计记录",
+                lblPerfTitle: "我的减碳成就",
+                btnReset: "重置",
+                lblCo2: "减少的温室气体 (CO₂)",
+                lblTrees: "相当于种植小松树",
+                lblTreeUnit: "棵",
+                lblStampTitle: "本周气候守护者打卡印章板",
+                lblGoal: "今日气候守护者达成率",
+                lblMissionTitle: "一键减碳气候任务",
+                lblMissionSub: "点击已完成的项目即可记录减碳量并获得印章",
+                lblPlaceTitle: "附近避难所与环保场所",
+                lblPlaceSub: "基于公共数据的周边安全与绿色设施指南",
+                tabShelter: "❄️ 避难·纳凉中心",
+                tabEco: "♻️ 环保·零废弃场所",
+                days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                stampWeeklyFmt: (cnt) => `本周已打卡 ${cnt} / 7 天`,
+                modes: {
+                    live: { badge: "🟢 气候安全", title: "无气象预警（平稳）", btn1: "查看周边避难所", missionTag: "日常低碳生活任务", recTag: "建议穿外套" },
+                    heat: { badge: "🔴 高温预警(模拟)", title: "高温危机应对模拟", btn1: "查找纳凉避难所", missionTag: "夏季防暑减碳任务", recTag: "注意防晒防暑" },
+                    rain: { badge: "🟡 暴雨注意(模拟)", title: "强降雨应对模拟", btn1: "查找防汛避难所", missionTag: "汛期防雨减碳任务", recTag: "必备雨具" },
+                    snow: { badge: "🔴 暴雪预警(模拟)", title: "暴雪寒潮应对模拟", btn1: "查找防寒避难所", missionTag: "冬季防雪减碳任务", recTag: "注意防寒防滑" }
+                }
+            }
+        };
+
+        // 언어 변경 핸들러
+        function changeLanguage(lang) {
+            currentLang = lang;
+            applyTranslations();
+            updateWeatherAndRegionUI();
+            renderWeeklyStamps();
+            const langNames = { ko: "한국어로 전환되었습니다", en: "Switched to English", ja: "日本語に切り替えました", zh: "已切换为中文" };
+            showToast(langNames[lang] || "Language changed", true);
+        }
+
+        // 화면 정적 텍스트 다국어 일괄 적용
+        function applyTranslations() {
+            const t = i18nDict[currentLang] || i18nDict.ko;
+            document.getElementById('app-title').textContent = t.appTitle;
+            document.getElementById('app-badge').textContent = t.appBadge;
+            document.getElementById('btn-live').textContent = t.btnLive;
+            document.getElementById('btn-heat').textContent = t.btnHeat;
+            document.getElementById('btn-rain').textContent = t.btnRain;
+            document.getElementById('btn-snow').textContent = t.btnSnow;
+            document.getElementById('lbl-temp').textContent = t.lblTemp;
+            document.getElementById('lbl-feels').textContent = t.lblFeels;
+            document.getElementById('lbl-wind').textContent = t.lblWind;
+            document.getElementById('lbl-rec-title').textContent = t.lblRecTitle;
+            document.getElementById('action-btn-2').textContent = t.actionBtn2;
+            document.getElementById('lbl-sdg-sub').textContent = t.lblSdgSub;
+            document.getElementById('lbl-perf-title').textContent = t.lblPerfTitle;
+            document.getElementById('btn-reset').textContent = t.btnReset;
+            document.getElementById('lbl-co2').textContent = t.lblCo2;
+            document.getElementById('lbl-trees').textContent = t.lblTrees;
+            document.getElementById('lbl-tree-unit').textContent = t.lblTreeUnit;
+            document.getElementById('lbl-stamp-title').innerHTML = `<i class="fa-solid fa-stamp mr-1.5"></i> ${t.lblStampTitle}`;
+            document.getElementById('lbl-goal').textContent = t.lblGoal;
+            document.getElementById('lbl-mission-title').textContent = t.lblMissionTitle;
+            document.getElementById('lbl-mission-sub').textContent = t.lblMissionSub;
+            const mTabShelter = document.getElementById('modal-tab-shelter');
+            const mTabEco = document.getElementById('modal-tab-eco');
+            if (mTabShelter) mTabShelter.textContent = t.tabShelter;
+            if (mTabEco) mTabEco.textContent = t.tabEco;
+        }
+
+        const koreaWeatherDB = {
+            jeonnam: {
+                sidoName: "전라남도",
+                cities: {
+                    mokpo: {
+                        name: "목포시",
+                        coords: { lat: 34.8118, lon: 126.3922 },
+                        station: "목포 기상대 (연산동 관측소)",
+                        live: { temp: "13.8°C", feels: "12.4°C", precip: "0.0mm", wind: "55% · 3.5m/s", desc: "목포 앞바다 맑고 선선함 · 해안가 강풍·일교차 주의" },
+                        heat: { temp: "34.5°C", feels: "37.2°C", precip: "0.0mm", wind: "40% · 2.1m/s", desc: "폭염 경보 발령 · 해안가 온열질환 및 자외선 주의" },
+                        rain: { temp: "21.0°C", feels: "22.5°C", precip: "68.5mm", wind: "92% · 7.8m/s", desc: "호우 주의보 발령 · 영산강 하구 및 저지대 침수 주의" },
+                        snow: { temp: "-3.2°C", feels: "-7.5°C", precip: "14.2cm", wind: "80% · 6.2m/s", desc: "대설 주의보 발령 · 서해안 낙상 및 빙판길 주의" },
+                        shelters: [
+                            { name: "목포시청 시민문화체육센터 쉼터", lat: 34.8135, lon: 126.3948, status: "24시간 개방 · 냉난방 완비", tag: "공공 대피소" },
+                            { name: "목포 하당 노인복지관 무더위쉼터", lat: 34.8055, lon: 126.4252, status: "운영중 · 응급키트 비치", tag: "지정 쉼터" }
+                        ]
+                    },
+                    muan: {
+                        name: "무안군",
+                        coords: { lat: 34.9904, lon: 126.4816 },
+                        station: "무안 기상관측소 (망운면·남악)",
+                        live: { temp: "13.7°C", feels: "12.3°C", precip: "0.0mm", wind: "56% · 3.8m/s", desc: "무안 갯벌 및 남악신도시 맑고 선선함" },
+                        heat: { temp: "34.8°C", feels: "37.5°C", precip: "0.0mm", wind: "42% · 2.2m/s", desc: "폭염 경보 · 농어촌 야외 작업 및 온열질환 주의" },
+                        rain: { temp: "20.8°C", feels: "22.3°C", precip: "70.0mm", wind: "91% · 7.5m/s", desc: "호우 주의보 · 영산강 하구 및 저지대 침수 대비" },
+                        snow: { temp: "-3.4°C", feels: "-7.6°C", precip: "14.5cm", wind: "81% · 6.4m/s", desc: "대설 주의보 · 서해안고속도로 및 무안권 빙판 주의" },
+                        shelters: [
+                            { name: "무안군 복합문화센터 안전쉼터", lat: 34.9922, lon: 126.4835, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "남악신도시 복합주민센터 쉼터", lat: 34.8125, lon: 126.4632, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    suncheon: {
+                        name: "순천시",
+                        coords: { lat: 34.9506, lon: 127.4872 },
+                        station: "순천 기상관측소 (조례동)",
+                        live: { temp: "14.2°C", feels: "13.1°C", precip: "0.0mm", wind: "50% · 2.8m/s", desc: "가을철 맑은 날씨 · 동천 주변 선선함" },
+                        heat: { temp: "35.1°C", feels: "38.0°C", precip: "0.0mm", wind: "38% · 1.8m/s", desc: "폭염 경보 발령 · 야외활동 자제 권고" },
+                        rain: { temp: "20.5°C", feels: "22.0°C", precip: "75.0mm", wind: "90% · 6.5m/s", desc: "호우 주의보 발령 · 동천 인근 접근 금지" },
+                        snow: { temp: "-2.8°C", feels: "-6.9°C", precip: "10.5cm", wind: "75% · 5.5m/s", desc: "대설 주의보 발령 · 순천만습지 주변 결빙" },
+                        shelters: [
+                            { name: "순천시 문화건강센터 쉼터", lat: 34.9532, lon: 127.4910, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "순천 팔마체육관 실내구호소", lat: 34.9385, lon: 127.5105, status: "비상 개방 준비", tag: "대규모 대피소" }
+                        ]
+                    },
+                    yeosu: {
+                        name: "여수시",
+                        coords: { lat: 34.7604, lon: 127.6622 },
+                        station: "여수 기상대 (수정동 관측소)",
+                        live: { temp: "14.9°C", feels: "13.8°C", precip: "0.0mm", wind: "62% · 5.1m/s", desc: "여수 바다 풍속 양호 · 맑음" },
+                        heat: { temp: "33.8°C", feels: "36.5°C", precip: "0.0mm", wind: "45% · 3.2m/s", desc: "폭염 주의보 · 해안가 자외선 주의" },
+                        rain: { temp: "21.5°C", feels: "23.0°C", precip: "82.0mm", wind: "95% · 8.9m/s", desc: "호우 경보 발령 · 해안 저지대 침수 대비" },
+                        snow: { temp: "-1.5°C", feels: "-5.8°C", precip: "8.0cm", wind: "85% · 7.0m/s", desc: "대설 주의보 · 돌산읍 방면 제설 작업 중" },
+                        shelters: [
+                            { name: "여수시 진남체육관 쉼터", lat: 34.7630, lon: 127.6680, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "여수 문수동 주민센터 무더위쉼터", lat: 34.7562, lon: 127.6510, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    naju: {
+                        name: "나주시",
+                        coords: { lat: 35.0158, lon: 126.7108 },
+                        station: "나주 기상관측소 (빛가람동)",
+                        live: { temp: "13.5°C", feels: "12.0°C", precip: "0.0mm", wind: "48% · 2.5m/s", desc: "혁신도시 맑고 일교차 큼" },
+                        heat: { temp: "35.8°C", feels: "38.5°C", precip: "0.0mm", wind: "35% · 1.5m/s", desc: "폭염 경보 · 야외 체육활동 금지" },
+                        rain: { temp: "19.8°C", feels: "21.2°C", precip: "55.0mm", wind: "88% · 5.0m/s", desc: "호우 주의보 · 영산강 주변 산책로 통제" },
+                        snow: { temp: "-4.0°C", feels: "-8.5°C", precip: "12.0cm", wind: "70% · 4.8m/s", desc: "대설 주의보 · 혁신도시 주요 도로 제설" },
+                        shelters: [
+                            { name: "나주시민회관 쉼터", lat: 35.0180, lon: 126.7145, status: "상시 개방", tag: "공공 대피소" },
+                            { name: "빛가람동 행정복지센터 쉼터", lat: 35.0210, lon: 126.7850, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    gwangyang: {
+                        name: "광양시",
+                        coords: { lat: 34.9407, lon: 127.6959 },
+                        station: "광양 기상관측소 (중동)",
+                        live: { temp: "14.5°C", feels: "13.2°C", precip: "0.0mm", wind: "52% · 3.0m/s", desc: "광양제철소 인근 맑음" },
+                        heat: { temp: "35.5°C", feels: "38.2°C", precip: "0.0mm", wind: "40% · 2.0m/s", desc: "폭염 경보 · 온실가스 저감 참여 권장" },
+                        rain: { temp: "20.8°C", feels: "22.3°C", precip: "70.0mm", wind: "91% · 6.0m/s", desc: "호우 주의보 · 섬진강 인근 주의" },
+                        snow: { temp: "-2.5°C", feels: "-6.5°C", precip: "9.0cm", wind: "78% · 5.2m/s", desc: "대설 주의보 · 백운산 권역 주의" },
+                        shelters: [
+                            { name: "광양실내체육관 쉼터", lat: 34.9435, lon: 127.6990, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "중마동 커뮤니티센터 쉼터", lat: 34.9350, lon: 127.6880, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    haenam: {
+                        name: "해남군",
+                        coords: { lat: 34.5735, lon: 126.5992 },
+                        station: "해남 기상관측소 (읍내리)",
+                        live: { temp: "14.1°C", feels: "12.8°C", precip: "0.0mm", wind: "60% · 4.5m/s", desc: "한반도 최남단 맑음 · 서해안 바람" },
+                        heat: { temp: "34.2°C", feels: "37.0°C", precip: "0.0mm", wind: "45% · 2.8m/s", desc: "폭염 주의보 · 논밭 작업 자제" },
+                        rain: { temp: "21.2°C", feels: "22.8°C", precip: "90.0mm", wind: "96% · 9.2m/s", desc: "호우 경보 · 땅끝해안 산사태 주의" },
+                        snow: { temp: "-2.0°C", feels: "-6.2°C", precip: "16.0cm", wind: "88% · 7.5m/s", desc: "대설 경보 · 농어촌 지역 고립 대비" },
+                        shelters: [
+                            { name: "해남 문화예술회관 쉼터", lat: 34.5752, lon: 126.6015, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "해남읍사무소 무더위쉼터", lat: 34.5718, lon: 126.5960, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    damyang: {
+                        name: "담양군",
+                        coords: { lat: 35.3211, lon: 126.9881 },
+                        station: "담양 기상관측소 (담양읍)",
+                        live: { temp: "13.0°C", feels: "11.5°C", precip: "0.0mm", wind: "46% · 2.2m/s", desc: "죽녹원·메타세쿼이아길 맑음" },
+                        heat: { temp: "35.4°C", feels: "38.2°C", precip: "0.0mm", wind: "34% · 1.5m/s", desc: "폭염 경보 · 관광객 온열질환 주의" },
+                        rain: { temp: "19.5°C", feels: "21.0°C", precip: "74.0mm", wind: "88% · 5.8m/s", desc: "호우 주의보 · 영산강 상류 범람 주의" },
+                        snow: { temp: "-3.8°C", feels: "-8.1°C", precip: "14.0cm", wind: "75% · 5.2m/s", desc: "대설 주의보 · 추월산 권역 결빙" },
+                        shelters: [
+                            { name: "담양문화회관 안전쉼터", lat: 35.3225, lon: 126.9895, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "담양읍 행정복지센터 쉼터", lat: 35.3201, lon: 126.9850, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    wando: {
+                        name: "완도군",
+                        coords: { lat: 34.3110, lon: 126.7550 },
+                        station: "완도 기상대 (완도읍 관측소)",
+                        live: { temp: "14.8°C", feels: "13.7°C", precip: "0.0mm", wind: "64% · 5.2m/s", desc: "다도해 해상 맑고 선선함" },
+                        heat: { temp: "33.5°C", feels: "36.4°C", precip: "0.0mm", wind: "48% · 3.3m/s", desc: "폭염 주의보 · 어업인 온열질환 주의" },
+                        rain: { temp: "21.6°C", feels: "23.2°C", precip: "92.0mm", wind: "96% · 9.5m/s", desc: "호우 경보 · 해안가 월파 및 침수 주의" },
+                        snow: { temp: "-1.8°C", feels: "-5.9°C", precip: "11.0cm", wind: "85% · 7.2m/s", desc: "대설 주의보 · 완도대교 빙판길 주의" },
+                        shelters: [
+                            { name: "완도군 농어민문화체육센터 쉼터", lat: 34.3135, lon: 126.7510, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "완도읍사무소 무더위쉼터", lat: 34.3102, lon: 126.7565, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    yeongam: {
+                        name: "영암군",
+                        coords: { lat: 34.8001, lon: 126.6967 },
+                        station: "영암 기상관측소 (영암읍)",
+                        live: { temp: "13.6°C", feels: "12.2°C", precip: "0.0mm", wind: "51% · 3.0m/s", desc: "월출산 자락 맑음" },
+                        heat: { temp: "35.2°C", feels: "38.0°C", precip: "0.0mm", wind: "38% · 1.9m/s", desc: "폭염 경보 · 삼호·영암 야외활동 자제" },
+                        rain: { temp: "20.4°C", feels: "22.0°C", precip: "72.0mm", wind: "90% · 6.8m/s", desc: "호우 주의보 · 영산강 하구둑 인근 주의" },
+                        snow: { temp: "-3.3°C", feels: "-7.5°C", precip: "13.5cm", wind: "79% · 5.8m/s", desc: "대설 주의보 · 월출산 권역 제설 작업" },
+                        shelters: [
+                            { name: "영암실내체육관 안전쉼터", lat: 34.8025, lon: 126.6990, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "삼호읍 종합문화체육센터 쉼터", lat: 34.7620, lon: 126.4780, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            seoul: {
+                sidoName: "서울특별시",
+                cities: {
+                    jongno: {
+                        name: "서울 종로구",
+                        coords: { lat: 37.5735, lon: 126.9790 },
+                        station: "서울 대표 기상관측소 (송월동)",
+                        live: { temp: "12.5°C", feels: "11.0°C", precip: "0.0mm", wind: "45% · 2.2m/s", desc: "도심 가을 맑음 · 청계천 산책 양호" },
+                        heat: { temp: "36.2°C", feels: "39.1°C", precip: "0.0mm", wind: "30% · 1.2m/s", desc: "폭염 경보 · 도심 열섬현상 극심" },
+                        rain: { temp: "18.5°C", feels: "19.8°C", precip: "85.0mm", wind: "85% · 5.5m/s", desc: "호우 경보 · 청계천 및 하천변 전면 통제" },
+                        snow: { temp: "-4.5°C", feels: "-9.1°C", precip: "11.5cm", wind: "65% · 4.0m/s", desc: "대설 주의보 · 출퇴근길 대중교통 이용 권장" },
+                        shelters: [
+                            { name: "종로구청 한파·무더위쉼터", lat: 37.5750, lon: 126.9812, status: "상시 개방", tag: "공공 대피소" },
+                            { name: "광화문광장 지하 대피소", lat: 37.5718, lon: 126.9768, status: "24시간 개방", tag: "비상 대피소" }
+                        ]
+                    },
+                    gangnam: {
+                        name: "서울 강남구",
+                        coords: { lat: 37.5172, lon: 127.0473 },
+                        station: "강남 관측소 (역삼동)",
+                        live: { temp: "13.1°C", feels: "11.8°C", precip: "0.0mm", wind: "48% · 2.5m/s", desc: "테헤란로 맑음 · 공기질 보통" },
+                        heat: { temp: "36.8°C", feels: "39.8°C", precip: "0.0mm", wind: "28% · 1.0m/s", desc: "폭염 경보 · 빌딩숲 열섬 주의" },
+                        rain: { temp: "19.0°C", feels: "20.5°C", precip: "95.0mm", wind: "89% · 6.2m/s", desc: "호우 경보 · 강남역 저지대 침수 주의" },
+                        snow: { temp: "-4.0°C", feels: "-8.5°C", precip: "10.0cm", wind: "70% · 4.5m/s", desc: "대설 주의보 · 언덕길 빙판 주의" },
+                        shelters: [
+                            { name: "강남구민회관 안전쉼터", lat: 37.5150, lon: 127.0505, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "역삼1동 주민센터 쉼터", lat: 37.4995, lon: 127.0332, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    mapo: {
+                        name: "서울 마포구",
+                        coords: { lat: 37.5663, lon: 126.9016 },
+                        station: "마포 관측소 (상암동)",
+                        live: { temp: "12.8°C", feels: "11.5°C", precip: "0.0mm", wind: "52% · 3.1m/s", desc: "한강변 맑고 선선함" },
+                        heat: { temp: "36.0°C", feels: "38.8°C", precip: "0.0mm", wind: "35% · 1.8m/s", desc: "폭염 경보 · 난지한강공원 야외활동 주의" },
+                        rain: { temp: "18.8°C", feels: "20.1°C", precip: "80.0mm", wind: "92% · 7.0m/s", desc: "호우 주의보 · 마포대교 및 한강공원 출입 통제" },
+                        snow: { temp: "-4.2°C", feels: "-8.8°C", precip: "12.0cm", wind: "75% · 5.0m/s", desc: "대설 주의보 · 상암동 DMC 제설 완료" },
+                        shelters: [
+                            { name: "마포아트센터 대피쉼터", lat: 37.5498, lon: 126.9455, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "상암동 주민센터 무더위쉼터", lat: 37.5780, lon: 126.8920, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    songpa: {
+                        name: "서울 송파구",
+                        coords: { lat: 37.5145, lon: 127.1059 },
+                        station: "송파 관측소 (잠실동)",
+                        live: { temp: "13.0°C", feels: "11.7°C", precip: "0.0mm", wind: "50% · 2.8m/s", desc: "석촌호수 주변 맑음" },
+                        heat: { temp: "36.5°C", feels: "39.2°C", precip: "0.0mm", wind: "32% · 1.5m/s", desc: "폭염 경보 · 잠실 야외활동 자제" },
+                        rain: { temp: "19.2°C", feels: "20.6°C", precip: "88.0mm", wind: "90% · 6.5m/s", desc: "호우 주의보 · 석촌호수 인근 산책로 통제" },
+                        snow: { temp: "-4.1°C", feels: "-8.6°C", precip: "11.0cm", wind: "72% · 4.8m/s", desc: "대설 주의보 · 올림픽공원 주변 제설" },
+                        shelters: [
+                            { name: "송파구민회관 안전쉼터", lat: 37.5112, lon: 127.0985, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "잠실본동 주민센터 쉼터", lat: 37.5065, lon: 127.0842, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    yeongdeungpo: {
+                        name: "서울 영등포구",
+                        coords: { lat: 37.5264, lon: 126.8962 },
+                        station: "영등포 관측소 (여의도동)",
+                        live: { temp: "12.9°C", feels: "11.5°C", precip: "0.0mm", wind: "51% · 3.0m/s", desc: "여의도 한강공원 맑음" },
+                        heat: { temp: "36.3°C", feels: "39.0°C", precip: "0.0mm", wind: "33% · 1.6m/s", desc: "폭염 경보 · 여의도 도심 온열질환 주의" },
+                        rain: { temp: "18.9°C", feels: "20.2°C", precip: "86.0mm", wind: "91% · 6.8m/s", desc: "호우 경보 · 여의상류·하류 IC 침수 주의" },
+                        snow: { temp: "-4.3°C", feels: "-8.9°C", precip: "11.5cm", wind: "73% · 4.9m/s", desc: "대설 주의보 · 여의대로 및 올림픽대로 제설" },
+                        shelters: [
+                            { name: "영등포아트홀 안전쉼터", lat: 37.5258, lon: 126.8968, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "여의동 주민센터 무더위쉼터", lat: 37.5215, lon: 126.9285, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    nowon: {
+                        name: "서울 노원구",
+                        coords: { lat: 37.6542, lon: 127.0568 },
+                        station: "노원 관측소 (상계동)",
+                        live: { temp: "12.1°C", feels: "10.6°C", precip: "0.0mm", wind: "44% · 2.1m/s", desc: "불암산·수락산 자락 맑고 상쾌함" },
+                        heat: { temp: "36.0°C", feels: "38.9°C", precip: "0.0mm", wind: "30% · 1.3m/s", desc: "폭염 경보 · 중랑천 주변 야외활동 자제" },
+                        rain: { temp: "18.3°C", feels: "19.6°C", precip: "84.0mm", wind: "87% · 5.8m/s", desc: "호우 경보 · 중랑천 산책로 전면 통제" },
+                        snow: { temp: "-4.8°C", feels: "-9.5°C", precip: "13.0cm", wind: "70% · 4.6m/s", desc: "대설 주의보 · 노원구 고지대 제설 작업" },
+                        shelters: [
+                            { name: "노원구민회관 안전쉼터", lat: 37.6545, lon: 127.0570, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "상계6·7동 주민센터 쉼터", lat: 37.6552, lon: 127.0620, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            gwangju: {
+                sidoName: "광주광역시",
+                cities: {
+                    bukgu: {
+                        name: "광주 북구",
+                        coords: { lat: 35.1742, lon: 126.9120 },
+                        station: "광주 대표 기상대 (임동 관측소)",
+                        live: { temp: "13.6°C", feels: "12.2°C", precip: "0.0mm", wind: "48% · 2.6m/s", desc: "무등산 자락 맑고 상쾌함" },
+                        heat: { temp: "35.2°C", feels: "38.1°C", precip: "0.0mm", wind: "36% · 1.7m/s", desc: "폭염 경보 · 전남대 및 북구 일원 주의" },
+                        rain: { temp: "20.1°C", feels: "21.6°C", precip: "72.0mm", wind: "89% · 6.8m/s", desc: "호우 주의보 · 광주천 하천변 접근 금지" },
+                        snow: { temp: "-3.5°C", feels: "-7.8°C", precip: "13.5cm", wind: "78% · 5.8m/s", desc: "대설 주의보 · 무등산권 도로 제설" },
+                        shelters: [
+                            { name: "북구 문화센터 쉼터", lat: 35.1820, lon: 126.9150, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "전남대학교 커뮤니티쉼터", lat: 35.1765, lon: 126.9058, status: "운영중", tag: "대학 쉼터" }
+                        ]
+                    },
+                    seogu: {
+                        name: "광주 서구",
+                        coords: { lat: 35.1520, lon: 126.8895 },
+                        station: "광주서구 관측소 (치평동)",
+                        live: { temp: "13.8°C", feels: "12.4°C", precip: "0.0mm", wind: "49% · 2.7m/s", desc: "상무지구 맑음" },
+                        heat: { temp: "35.4°C", feels: "38.3°C", precip: "0.0mm", wind: "35% · 1.6m/s", desc: "폭염 경보 · 상무지구 도심 열섬 주의" },
+                        rain: { temp: "20.3°C", feels: "21.8°C", precip: "74.0mm", wind: "90% · 7.0m/s", desc: "호우 주의보 · 운천저수지 인근 주의" },
+                        snow: { temp: "-3.4°C", feels: "-7.7°C", precip: "13.0cm", wind: "77% · 5.6m/s", desc: "대설 주의보 · 상무대로 제설 작업" },
+                        shelters: [
+                            { name: "광주시청 시민홀 대피소", lat: 35.1601, lon: 126.8515, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "치평동 행정복지센터 쉼터", lat: 35.1552, lon: 126.8485, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    gwangsan: {
+                        name: "광주 광산구",
+                        coords: { lat: 35.1395, lon: 126.7936 },
+                        station: "광산 관측소 (송정동)",
+                        live: { temp: "13.5°C", feels: "12.1°C", precip: "0.0mm", wind: "50% · 2.9m/s", desc: "송정역 및 평동 맑음" },
+                        heat: { temp: "35.5°C", feels: "38.4°C", precip: "0.0mm", wind: "34% · 1.5m/s", desc: "폭염 경보 · 야외 근로자 주의" },
+                        rain: { temp: "20.0°C", feels: "21.5°C", precip: "70.0mm", wind: "88% · 6.5m/s", desc: "호우 주의보 · 황룡강 주변 저지대 대비" },
+                        snow: { temp: "-3.6°C", feels: "-8.0°C", precip: "14.0cm", wind: "79% · 6.0m/s", desc: "대설 주의보 · 송정역 권역 제설" },
+                        shelters: [
+                            { name: "광산구 문화예술회관 쉼터", lat: 35.1412, lon: 126.7965, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "송정동 행정복지센터 쉼터", lat: 35.1375, lon: 126.7910, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    donggu: {
+                        name: "광주 동구",
+                        coords: { lat: 35.1461, lon: 126.9231 },
+                        station: "광주동구 관측소 (서석동)",
+                        live: { temp: "13.7°C", feels: "12.3°C", precip: "0.0mm", wind: "47% · 2.5m/s", desc: "국립아시아문화전당 일원 맑음" },
+                        heat: { temp: "35.3°C", feels: "38.2°C", precip: "0.0mm", wind: "35% · 1.6m/s", desc: "폭염 경보 · 충장로·금남로 도심 주의" },
+                        rain: { temp: "20.2°C", feels: "21.7°C", precip: "73.0mm", wind: "89% · 6.7m/s", desc: "호우 주의보 · 광주천 산책로 통제" },
+                        snow: { temp: "-3.5°C", feels: "-7.8°C", precip: "13.8cm", wind: "78% · 5.7m/s", desc: "대설 주의보 · 지산유원지 및 무등산 진입로 제설" },
+                        shelters: [
+                            { name: "동구 국민체육센터 안전쉼터", lat: 35.1450, lon: 126.9255, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "서남동 행정복지센터 쉼터", lat: 35.1465, lon: 126.9210, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    namgu_gj: {
+                        name: "광주 남구",
+                        coords: { lat: 35.1328, lon: 126.9024 },
+                        station: "광주남구 관측소 (봉선동)",
+                        live: { temp: "13.6°C", feels: "12.2°C", precip: "0.0mm", wind: "48% · 2.6m/s", desc: "양림동 역사문화마을 맑음" },
+                        heat: { temp: "35.3°C", feels: "38.2°C", precip: "0.0mm", wind: "36% · 1.7m/s", desc: "폭염 경보 · 봉선·진월동 일원 주의" },
+                        rain: { temp: "20.1°C", feels: "21.6°C", precip: "71.0mm", wind: "88% · 6.6m/s", desc: "호우 주의보 · 영산강 승촌보 인근 주의" },
+                        snow: { temp: "-3.6°C", feels: "-7.9°C", precip: "13.5cm", wind: "78% · 5.8m/s", desc: "대설 주의보 · 제석산·백운광장 권역 제설" },
+                        shelters: [
+                            { name: "남구 다목적체육관 안전쉼터", lat: 35.1310, lon: 126.9045, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "봉선2동 행정복지센터 쉼터", lat: 35.1255, lon: 126.9120, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            jeonbuk: {
+                sidoName: "전북특별자치도",
+                cities: {
+                    jeonju: {
+                        name: "전주시 완산구",
+                        coords: { lat: 35.8122, lon: 127.1477 },
+                        station: "전주 기상관측소 (중앙동)",
+                        live: { temp: "13.2°C", feels: "11.8°C", precip: "0.0mm", wind: "46% · 2.4m/s", desc: "한옥마을 맑고 선선함" },
+                        heat: { temp: "36.0°C", feels: "38.9°C", precip: "0.0mm", wind: "32% · 1.4m/s", desc: "폭염 경보 · 한옥마을 관광객 온열질환 주의" },
+                        rain: { temp: "19.5°C", feels: "21.0°C", precip: "78.0mm", wind: "87% · 6.1m/s", desc: "호우 주의보 · 전주천 산책로 통제" },
+                        snow: { temp: "-3.8°C", feels: "-8.2°C", precip: "15.0cm", wind: "74% · 5.2m/s", desc: "대설 주의보 · 전주 한옥마을 일대 제설" },
+                        shelters: [
+                            { name: "전주시청 야외광장 지하대피소", lat: 35.8242, lon: 127.1480, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "완산구청 무더위한파쉼터", lat: 35.8115, lon: 127.1205, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    gunsan: {
+                        name: "군산시",
+                        coords: { lat: 35.9676, lon: 126.7368 },
+                        station: "군산 기상대 (내흥동 관측소)",
+                        live: { temp: "13.0°C", feels: "11.5°C", precip: "0.0mm", wind: "65% · 5.8m/s", desc: "군산 앞바다 바람 다소 강함 · 맑음" },
+                        heat: { temp: "34.0°C", feels: "37.1°C", precip: "0.0mm", wind: "48% · 3.5m/s", desc: "폭염 주의보 · 해안가 야외활동 주의" },
+                        rain: { temp: "20.5°C", feels: "22.1°C", precip: "95.0mm", wind: "98% · 10.5m/s", desc: "호우 경보 · 새만금 및 저지대 침수 주의" },
+                        snow: { temp: "-3.0°C", feels: "-7.5°C", precip: "18.0cm", wind: "86% · 7.8m/s", desc: "대설 경보 · 서해안 폭설 대피 준비" },
+                        shelters: [
+                            { name: "군산 월명체육관 안전쉼터", lat: 35.9652, lon: 126.7485, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "군산시민문화회관 쉼터", lat: 35.9690, lon: 126.7250, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    iksan: {
+                        name: "익산시",
+                        coords: { lat: 35.9483, lon: 126.9576 },
+                        station: "익산 기상관측소 (신동)",
+                        live: { temp: "13.4°C", feels: "12.0°C", precip: "0.0mm", wind: "47% · 2.5m/s", desc: "익산역 일원 맑음" },
+                        heat: { temp: "35.8°C", feels: "38.7°C", precip: "0.0mm", wind: "33% · 1.5m/s", desc: "폭염 경보 · 야외 작업 자제" },
+                        rain: { temp: "19.7°C", feels: "21.2°C", precip: "76.0mm", wind: "88% · 6.0m/s", desc: "호우 주의보 · 만경강 인근 주의" },
+                        snow: { temp: "-3.9°C", feels: "-8.4°C", precip: "14.5cm", wind: "75% · 5.3m/s", desc: "대설 주의보 · KTX 익산역 주변 제설" },
+                        shelters: [
+                            { name: "익산 실내체육관 쉼터", lat: 35.9510, lon: 126.9610, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "모현동 행정복지센터 쉼터", lat: 35.9445, lon: 126.9420, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    jeongeup: {
+                        name: "정읍시",
+                        coords: { lat: 35.5699, lon: 126.8560 },
+                        station: "정읍 기상관측소 (수성동)",
+                        live: { temp: "13.1°C", feels: "11.7°C", precip: "0.0mm", wind: "46% · 2.4m/s", desc: "내장산 국립공원 가을 단풍·맑음" },
+                        heat: { temp: "35.6°C", feels: "38.5°C", precip: "0.0mm", wind: "34% · 1.6m/s", desc: "폭염 경보 · 야외 농작업 자제" },
+                        rain: { temp: "19.6°C", feels: "21.1°C", precip: "75.0mm", wind: "88% · 6.1m/s", desc: "호우 주의보 · 정읍천 산책로 통제" },
+                        snow: { temp: "-3.8°C", feels: "-8.2°C", precip: "16.5cm", wind: "77% · 5.5m/s", desc: "대설 경보 · 정읍·내장산 권역 폭설 주의" },
+                        shelters: [
+                            { name: "정읍 국민체육센터 안전쉼터", lat: 35.5715, lon: 126.8580, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "수성동 행정복지센터 쉼터", lat: 35.5680, lon: 126.8540, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    namwon: {
+                        name: "남원시",
+                        coords: { lat: 35.4164, lon: 127.3904 },
+                        station: "남원 기상관측소 (도통동)",
+                        live: { temp: "12.8°C", feels: "11.4°C", precip: "0.0mm", wind: "44% · 2.2m/s", desc: "광한루원 및 지리산 자락 맑음" },
+                        heat: { temp: "35.4°C", feels: "38.3°C", precip: "0.0mm", wind: "32% · 1.5m/s", desc: "폭염 경보 · 야외 활동 주의" },
+                        rain: { temp: "19.2°C", feels: "20.8°C", precip: "82.0mm", wind: "89% · 6.4m/s", desc: "호우 경보 · 요천 및 지리산 계곡 출입 금지" },
+                        snow: { temp: "-4.1°C", feels: "-8.6°C", precip: "15.5cm", wind: "75% · 5.2m/s", desc: "대설 주의보 · 지리산 고지대 도로 결빙" },
+                        shelters: [
+                            { name: "남원 춘향골체육관 안전쉼터", lat: 35.4190, lon: 127.3950, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "도통동 행정복지센터 쉼터", lat: 35.4145, lon: 127.3880, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            busan: {
+                sidoName: "부산광역시",
+                cities: {
+                    haeundae: {
+                        name: "부산 해운대구",
+                        coords: { lat: 35.1631, lon: 129.1635 },
+                        station: "부산 대표 관측소 (우동)",
+                        live: { temp: "15.2°C", feels: "14.1°C", precip: "0.0mm", wind: "60% · 4.8m/s", desc: "해운대 해수욕장 맑고 쾌적함" },
+                        heat: { temp: "34.5°C", feels: "37.8°C", precip: "0.0mm", wind: "45% · 3.0m/s", desc: "폭염 경보 · 해수욕장 피서객 온열질환 주의" },
+                        rain: { temp: "22.0°C", feels: "23.8°C", precip: "88.0mm", wind: "95% · 9.1m/s", desc: "호우 경보 · 마린시티 해안 방파제 접근 금지" },
+                        snow: { temp: "-1.0°C", feels: "-5.0°C", precip: "5.0cm", wind: "82% · 6.5m/s", desc: "대설 주의보 · 부산권 드문 눈 주의 운전" },
+                        shelters: [
+                            { name: "해운대구 문화복합센터 쉼터", lat: 35.1650, lon: 129.1670, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "벡스코(BEXCO) 비상대피소", lat: 35.1689, lon: 129.1360, status: "비상 개방", tag: "대규모 대피소" }
+                        ]
+                    },
+                    junggu: {
+                        name: "부산 중구",
+                        coords: { lat: 35.1060, lon: 129.0324 },
+                        station: "부산 기상관측소 (대청동)",
+                        live: { temp: "15.0°C", feels: "13.9°C", precip: "0.0mm", wind: "62% · 5.0m/s", desc: "남포동 및 자갈치시장 맑음" },
+                        heat: { temp: "34.2°C", feels: "37.5°C", precip: "0.0mm", wind: "46% · 3.1m/s", desc: "폭염 경보 · 원도심 야외활동 자제" },
+                        rain: { temp: "21.8°C", feels: "23.5°C", precip: "90.0mm", wind: "96% · 9.5m/s", desc: "호우 경보 · 자갈치 해안가 월파 주의" },
+                        snow: { temp: "-0.8°C", feels: "-4.8°C", precip: "4.5cm", wind: "83% · 6.8m/s", desc: "대설 주의보 · 산복도로 빙판 주의" },
+                        shelters: [
+                            { name: "중구청 시민대피소", lat: 35.1065, lon: 129.0328, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "남포동 주민센터 쉼터", lat: 35.0985, lon: 129.0295, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    busanjin: {
+                        name: "부산 부산진구",
+                        coords: { lat: 35.1628, lon: 129.0531 },
+                        station: "부산진 관측소 (부전동)",
+                        live: { temp: "14.9°C", feels: "13.8°C", precip: "0.0mm", wind: "55% · 4.0m/s", desc: "서면 및 시민공원 맑음" },
+                        heat: { temp: "35.0°C", feels: "38.1°C", precip: "0.0mm", wind: "42% · 2.5m/s", desc: "폭염 경보 · 서면 도심 열섬 주의" },
+                        rain: { temp: "21.5°C", feels: "23.2°C", precip: "86.0mm", wind: "93% · 8.5m/s", desc: "호우 경보 · 동천 인근 저지대 침수 대비" },
+                        snow: { temp: "-1.2°C", feels: "-5.2°C", precip: "5.0cm", wind: "80% · 6.0m/s", desc: "대설 주의보 · 백양터널·황령터널 진입로 주의" },
+                        shelters: [
+                            { name: "부산시민공원 다솜관 쉼터", lat: 35.1682, lon: 129.0570, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "부산진구청 무더위쉼터", lat: 35.1630, lon: 129.0535, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            daegu: {
+                sidoName: "대구광역시",
+                cities: {
+                    junggu: {
+                        name: "대구 중구",
+                        coords: { lat: 35.8693, lon: 128.6062 },
+                        station: "대구 기상지청 (신암동 관측소)",
+                        live: { temp: "14.5°C", feels: "13.2°C", precip: "0.0mm", wind: "40% · 2.0m/s", desc: "대구 도심 맑고 가을 날씨 만개" },
+                        heat: { temp: "38.2°C", feels: "41.5°C", precip: "0.0mm", wind: "25% · 1.0m/s", desc: "대프리카 폭염 특보 극심 · 야외 활동 전면 금지" },
+                        rain: { temp: "20.5°C", feels: "22.0°C", precip: "65.0mm", wind: "85% · 5.5m/s", desc: "호우 주의보 · 신천둔치 접근 금지" },
+                        snow: { temp: "-3.0°C", feels: "-7.2°C", precip: "8.0cm", wind: "68% · 4.2m/s", desc: "대설 주의보 · 대구권 주요 도로 제설" },
+                        shelters: [
+                            { name: "대구시민운동장 실내쉼터", lat: 35.8812, lon: 128.5882, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "중구청 무더위한파쉼터", lat: 35.8695, lon: 128.6065, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    suseong: {
+                        name: "대구 수성구",
+                        coords: { lat: 35.8581, lon: 128.6306 },
+                        station: "수성 관측소 (범어동)",
+                        live: { temp: "14.4°C", feels: "13.1°C", precip: "0.0mm", wind: "41% · 2.1m/s", desc: "수성못 일원 맑음" },
+                        heat: { temp: "38.0°C", feels: "41.2°C", precip: "0.0mm", wind: "26% · 1.1m/s", desc: "폭염 경보 극심 · 수성못 야외활동 자제" },
+                        rain: { temp: "20.4°C", feels: "21.9°C", precip: "66.0mm", wind: "85% · 5.6m/s", desc: "호우 주의보 · 범어천 인근 주의" },
+                        snow: { temp: "-3.1°C", feels: "-7.3°C", precip: "8.2cm", wind: "69% · 4.3m/s", desc: "대설 주의보 · 달구벌대로 제설 작업" },
+                        shelters: [
+                            { name: "수성아트피아 안전쉼터", lat: 35.8295, lon: 128.6245, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "수성구청 무더위한파쉼터", lat: 35.8585, lon: 128.6310, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            incheon: {
+                sidoName: "인천광역시",
+                cities: {
+                    namdong: {
+                        name: "인천 남동구",
+                        coords: { lat: 37.4475, lon: 126.7315 },
+                        station: "인천 기상대 (문학동 관측소)",
+                        live: { temp: "12.9°C", feels: "11.4°C", precip: "0.0mm", wind: "58% · 4.5m/s", desc: "인천 시내 맑음 · 서해안 바닷바람" },
+                        heat: { temp: "35.0°C", feels: "38.2°C", precip: "0.0mm", wind: "42% · 2.8m/s", desc: "폭염 경보 · 소래포구 및 도심 주의" },
+                        rain: { temp: "18.9°C", feels: "20.2°C", precip: "82.0mm", wind: "93% · 8.2m/s", desc: "호우 경보 · 저지대 침수 대비" },
+                        snow: { temp: "-4.0°C", feels: "-8.5°C", precip: "12.5cm", wind: "80% · 6.2m/s", desc: "대설 주의보 · 인천항 및 도심 제설" },
+                        shelters: [
+                            { name: "남동구청 대회의실 쉼터", lat: 37.4480, lon: 126.7320, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "구월동 행정복지센터 쉼터", lat: 37.4520, lon: 126.7050, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    yeonsu: {
+                        name: "인천 연수구",
+                        coords: { lat: 37.4102, lon: 126.6783 },
+                        station: "송도 관측소 (송도동)",
+                        live: { temp: "13.1°C", feels: "11.6°C", precip: "0.0mm", wind: "60% · 4.9m/s", desc: "송도 센트럴파크 맑음" },
+                        heat: { temp: "34.8°C", feels: "37.9°C", precip: "0.0mm", wind: "44% · 3.0m/s", desc: "폭염 경보 · 해안가 자외선 주의" },
+                        rain: { temp: "19.1°C", feels: "20.4°C", precip: "84.0mm", wind: "94% · 8.5m/s", desc: "호우 경보 · 송도 해안도로 강풍 주의" },
+                        snow: { temp: "-3.9°C", feels: "-8.4°C", precip: "12.0cm", wind: "81% · 6.4m/s", desc: "대설 주의보 · 인천대교 권역 제설" },
+                        shelters: [
+                            { name: "송도컨벤시아 안전쉼터", lat: 37.3885, lon: 126.6455, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "연수구청 무더위한파쉼터", lat: 37.4105, lon: 126.6785, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            daejeon: {
+                sidoName: "대전광역시",
+                cities: {
+                    seogu: {
+                        name: "대전 서구",
+                        coords: { lat: 36.3554, lon: 127.3838 },
+                        station: "대전 기상청 (구성동 관측소)",
+                        live: { temp: "13.3°C", feels: "12.0°C", precip: "0.0mm", wind: "42% · 2.2m/s", desc: "둔산동 둔산대공원 맑음" },
+                        heat: { temp: "36.5°C", feels: "39.5°C", precip: "0.0mm", wind: "28% · 1.2m/s", desc: "폭염 경보 · 갑천 주변 야외활동 자제" },
+                        rain: { temp: "19.2°C", feels: "20.8°C", precip: "75.0mm", wind: "86% · 5.8m/s", desc: "호우 주의보 · 갑천변 산책로 출입 금지" },
+                        snow: { temp: "-3.5°C", feels: "-7.9°C", precip: "13.0cm", wind: "72% · 4.9m/s", desc: "대설 주의보 · 대전청사 주변 제설" },
+                        shelters: [
+                            { name: "대전예술의전당 안전쉼터", lat: 36.3668, lon: 127.3845, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "둔산동 행정복지센터 쉼터", lat: 36.3520, lon: 127.3880, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    yuseong: {
+                        name: "대전 유성구",
+                        coords: { lat: 36.3622, lon: 127.3561 },
+                        station: "유성 관측소 (어은동)",
+                        live: { temp: "13.2°C", feels: "11.9°C", precip: "0.0mm", wind: "41% · 2.1m/s", desc: "대덕연구단지 및 유성온천 맑음" },
+                        heat: { temp: "36.4°C", feels: "39.4°C", precip: "0.0mm", wind: "29% · 1.3m/s", desc: "폭염 경보 · 야외 활동 자제" },
+                        rain: { temp: "19.1°C", feels: "20.7°C", precip: "74.0mm", wind: "86% · 5.7m/s", desc: "호우 주의보 · 유성천 인근 주의" },
+                        snow: { temp: "-3.6°C", feels: "-8.0°C", precip: "13.2cm", wind: "73% · 5.0m/s", desc: "대설 주의보 · 유성IC 주변 제설" },
+                        shelters: [
+                            { name: "유성종합스포츠센터 쉼터", lat: 36.3785, lon: 127.3650, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "온천1동 행정복지센터 쉼터", lat: 36.3565, lon: 127.3420, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            ulsan: {
+                sidoName: "울산광역시",
+                cities: {
+                    namgu: {
+                        name: "울산 남구",
+                        coords: { lat: 35.5438, lon: 129.3301 },
+                        station: "울산 기상대 (무거동 관측소)",
+                        live: { temp: "14.8°C", feels: "13.6°C", precip: "0.0mm", wind: "55% · 4.2m/s", desc: "태화강 국가정원 맑음" },
+                        heat: { temp: "35.8°C", feels: "38.9°C", precip: "0.0mm", wind: "38% · 2.5m/s", desc: "폭염 경보 · 울산 공단 및 도심 주의" },
+                        rain: { temp: "21.0°C", feels: "22.7°C", precip: "80.0mm", wind: "92% · 8.0m/s", desc: "호우 경보 · 태화강 둔치 통제" },
+                        snow: { temp: "-2.0°C", feels: "-6.1°C", precip: "7.0cm", wind: "79% · 5.8m/s", desc: "대설 주의보 · 울산대교 권역 제설" },
+                        shelters: [
+                            { name: "울산문화예술회관 쉼터", lat: 35.5480, lon: 129.3270, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "삼산동 행정복지센터 쉼터", lat: 35.5390, lon: 129.3380, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            sejong: {
+                sidoName: "세종특별자치시",
+                cities: {
+                    sejong_city: {
+                        name: "세종특별자치시",
+                        coords: { lat: 36.4801, lon: 127.2890 },
+                        station: "세종 기상관측소 (어진동)",
+                        live: { temp: "13.2°C", feels: "11.8°C", precip: "0.0mm", wind: "44% · 2.3m/s", desc: "정부세종청사 인근 맑음" },
+                        heat: { temp: "35.5°C", feels: "38.4°C", precip: "0.0mm", wind: "30% · 1.3m/s", desc: "폭염 경보 · 호수공원 야외활동 주의" },
+                        rain: { temp: "19.3°C", feels: "20.9°C", precip: "74.0mm", wind: "87% · 5.9m/s", desc: "호우 주의보 · 금강변 산책로 통제" },
+                        snow: { temp: "-3.7°C", feels: "-8.1°C", precip: "13.5cm", wind: "73% · 5.0m/s", desc: "대설 주의보 · BRT 도로 제설 작업" },
+                        shelters: [
+                            { name: "세종시민체육관 안전쉼터", lat: 36.4850, lon: 127.2850, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "어진동 복합커뮤니티센터 쉼터", lat: 36.5015, lon: 127.2625, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            gyeonggi: {
+                sidoName: "경기도",
+                cities: {
+                    suwon: {
+                        name: "수원시 팔달구",
+                        coords: { lat: 37.2636, lon: 127.0286 },
+                        station: "수원 기상관측소 (서둔동)",
+                        live: { temp: "12.7°C", feels: "11.2°C", precip: "0.0mm", wind: "46% · 2.4m/s", desc: "수원화성 주변 가을 맑음" },
+                        heat: { temp: "35.9°C", feels: "38.8°C", precip: "0.0mm", wind: "31% · 1.4m/s", desc: "폭염 경보 · 도심 야외활동 자제" },
+                        rain: { temp: "18.7°C", feels: "20.0°C", precip: "81.0mm", wind: "88% · 6.0m/s", desc: "호우 주의보 · 수원천 산책로 통제" },
+                        snow: { temp: "-4.3°C", feels: "-8.9°C", precip: "13.0cm", wind: "74% · 5.1m/s", desc: "대설 주의보 · 팔달문 및 주요 도로 제설" },
+                        shelters: [
+                            { name: "수원시청 별관 대피쉼터", lat: 37.2638, lon: 127.0289, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "팔달구청 무더위한파쉼터", lat: 37.2825, lon: 127.0201, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    seongnam: {
+                        name: "성남시 분당구",
+                        coords: { lat: 37.3827, lon: 127.1189 },
+                        station: "성남 관측소 (수내동)",
+                        live: { temp: "12.8°C", feels: "11.3°C", precip: "0.0mm", wind: "45% · 2.3m/s", desc: "분당 중앙공원·판교 맑음" },
+                        heat: { temp: "36.0°C", feels: "38.9°C", precip: "0.0mm", wind: "30% · 1.3m/s", desc: "폭염 경보 · 탄천변 야외활동 자제" },
+                        rain: { temp: "18.8°C", feels: "20.1°C", precip: "82.0mm", wind: "88% · 6.1m/s", desc: "호우 주의보 · 탄천 산책로 전면 통제" },
+                        snow: { temp: "-4.2°C", feels: "-8.8°C", precip: "12.8cm", wind: "73% · 5.0m/s", desc: "대설 주의보 · 판교테크노밸리 제설" },
+                        shelters: [
+                            { name: "성남아트센터 안전쉼터", lat: 37.4025, lon: 127.1315, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "분당구청 무더위한파쉼터", lat: 37.3828, lon: 127.1190, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    goyang: {
+                        name: "고양시 일산동구",
+                        coords: { lat: 37.6584, lon: 126.7745 },
+                        station: "고양 관측소 (식사동)",
+                        live: { temp: "12.4°C", feels: "10.9°C", precip: "0.0mm", wind: "49% · 2.7m/s", desc: "일산 호수공원 맑음" },
+                        heat: { temp: "35.7°C", feels: "38.6°C", precip: "0.0mm", wind: "33% · 1.5m/s", desc: "폭염 경보 · 호수공원 야외 행사 자제" },
+                        rain: { temp: "18.5°C", feels: "19.8°C", precip: "83.0mm", wind: "90% · 6.5m/s", desc: "호우 경보 · 도심 저지대 침수 대비" },
+                        snow: { temp: "-4.6°C", feels: "-9.3°C", precip: "14.0cm", wind: "76% · 5.4m/s", desc: "대설 주의보 · 일산신도시 제설 작업" },
+                        shelters: [
+                            { name: "고양아람누리 대피쉼터", lat: 37.6598, lon: 126.7765, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "일산동구청 쉼터", lat: 37.6585, lon: 126.7748, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    yongin: {
+                        name: "용인시 처인구",
+                        coords: { lat: 37.2343, lon: 127.2013 },
+                        station: "용인 관측소 (역북동)",
+                        live: { temp: "12.6°C", feels: "11.1°C", precip: "0.0mm", wind: "45% · 2.3m/s", desc: "용인 처인권 맑음" },
+                        heat: { temp: "35.8°C", feels: "38.7°C", precip: "0.0mm", wind: "30% · 1.3m/s", desc: "폭염 경보 · 야외 활동 주의" },
+                        rain: { temp: "18.8°C", feels: "20.1°C", precip: "79.0mm", wind: "87% · 5.9m/s", desc: "호우 주의보 · 경안천변 산책로 통제" },
+                        snow: { temp: "-4.4°C", feels: "-9.0°C", precip: "13.5cm", wind: "73% · 5.0m/s", desc: "대설 주의보 · 처인구 주요 도로 제설" },
+                        shelters: [
+                            { name: "용인실내체육관 쉼터", lat: 37.2380, lon: 127.2050, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "처인구청 무더위한파쉼터", lat: 37.2345, lon: 127.2015, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    hwaseong: {
+                        name: "화성시",
+                        coords: { lat: 37.1995, lon: 126.8315 },
+                        station: "화성 관측소 (남양읍)",
+                        live: { temp: "12.8°C", feels: "11.3°C", precip: "0.0mm", wind: "52% · 3.5m/s", desc: "화성 서해안 맑음" },
+                        heat: { temp: "35.6°C", feels: "38.5°C", precip: "0.0mm", wind: "35% · 1.8m/s", desc: "폭염 경보 · 동탄 및 서해안 주의" },
+                        rain: { temp: "19.0°C", feels: "20.4°C", precip: "80.0mm", wind: "91% · 6.8m/s", desc: "호우 주의보 · 저수지 및 농경지 주변 주의" },
+                        snow: { temp: "-4.2°C", feels: "-8.7°C", precip: "12.5cm", wind: "77% · 5.5m/s", desc: "대설 주의보 · 동탄신도시 제설" },
+                        shelters: [
+                            { name: "화성시 종합경기타운 쉼터", lat: 37.1365, lon: 126.9215, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "남양읍 행정복지센터 쉼터", lat: 37.2010, lon: 126.8285, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            gangwon: {
+                sidoName: "강원특별자치도",
+                cities: {
+                    chuncheon: {
+                        name: "춘천시",
+                        coords: { lat: 37.8813, lon: 127.7298 },
+                        station: "춘천 기상대 (소양로 관측소)",
+                        live: { temp: "11.5°C", feels: "9.8°C", precip: "0.0mm", wind: "38% · 1.8m/s", desc: "의암호 호반 가을 안개 후 맑음" },
+                        heat: { temp: "34.8°C", feels: "37.5°C", precip: "0.0mm", wind: "25% · 1.0m/s", desc: "폭염 주의보 · 춘천 호반 야외활동 주의" },
+                        rain: { temp: "17.5°C", feels: "19.0°C", precip: "90.0mm", wind: "85% · 5.2m/s", desc: "호우 경보 · 의암호 및 소양강 인근 범람 주의" },
+                        snow: { temp: "-5.5°C", feels: "-10.5°C", precip: "22.0cm", wind: "65% · 4.0m/s", desc: "대설 경보 · 강원 영서 대설 특보, 체인 장착 필수" },
+                        shelters: [
+                            { name: "춘천 호반체육관 대피쉼터", lat: 37.8685, lon: 127.7150, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "춘천시청 무더위한파쉼터", lat: 37.8815, lon: 127.7300, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    gangneung: {
+                        name: "강릉시",
+                        coords: { lat: 37.7519, lon: 128.8761 },
+                        station: "강원지방기상청 (용강동 관측소)",
+                        live: { temp: "13.8°C", feels: "12.4°C", precip: "0.0mm", wind: "58% · 4.8m/s", desc: "경포해변 동해바다 맑음" },
+                        heat: { temp: "34.5°C", feels: "37.4°C", precip: "0.0mm", wind: "45% · 3.0m/s", desc: "폭염 경보 · 동해안 피서객 온열질환 주의" },
+                        rain: { temp: "19.5°C", feels: "21.0°C", precip: "105.0mm", wind: "94% · 9.0m/s", desc: "호우 경보 · 남대천 범람 및 해안 월파 주의" },
+                        snow: { temp: "-4.2°C", feels: "-9.5°C", precip: "26.0cm", wind: "82% · 6.8m/s", desc: "대설 경보 · 영동지역 폭설 고립 대비" },
+                        shelters: [
+                            { name: "강릉 올림픽파크 스피드스케이팅장 쉼터", lat: 37.7785, lon: 128.8980, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "강릉시청 무더위한파쉼터", lat: 37.7520, lon: 128.8765, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    wonju: {
+                        name: "원주시",
+                        coords: { lat: 37.3422, lon: 127.9202 },
+                        station: "원주 기상관측소 (단계동)",
+                        live: { temp: "12.0°C", feels: "10.4°C", precip: "0.0mm", wind: "40% · 2.0m/s", desc: "원주 치악산 자락 맑음" },
+                        heat: { temp: "35.2°C", feels: "38.0°C", precip: "0.0mm", wind: "27% · 1.1m/s", desc: "폭염 경보 · 야외 활동 주의" },
+                        rain: { temp: "18.0°C", feels: "19.5°C", precip: "82.0mm", wind: "86% · 5.5m/s", desc: "호우 주의보 · 원주천 산책로 통제" },
+                        snow: { temp: "-5.2°C", feels: "-10.1°C", precip: "20.0cm", wind: "68% · 4.5m/s", desc: "대설 경보 · 치악산 및 원주권 폭설 주의" },
+                        shelters: [
+                            { name: "원주 치악체육관 쉼터", lat: 37.3385, lon: 127.9420, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "단계동 행정복지센터 쉼터", lat: 37.3450, lon: 127.9280, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    sokcho: {
+                        name: "속초시",
+                        coords: { lat: 38.2070, lon: 128.5918 },
+                        station: "속초 기상대 (도문동 관측소)",
+                        live: { temp: "13.5°C", feels: "12.0°C", precip: "0.0mm", wind: "62% · 5.5m/s", desc: "설악권 동해바다 맑고 상쾌함" },
+                        heat: { temp: "33.0°C", feels: "36.0°C", precip: "0.0mm", wind: "50% · 3.5m/s", desc: "폭염 주의보 · 동해안 해수욕장 주의" },
+                        rain: { temp: "19.0°C", feels: "20.5°C", precip: "110.0mm", wind: "95% · 9.5m/s", desc: "호우 경보 · 설악산 계곡 및 동해안 폭우 주의" },
+                        snow: { temp: "-4.8°C", feels: "-10.2°C", precip: "28.0cm", wind: "85% · 7.2m/s", desc: "대설 경보 · 설악산 및 영동 폭설 고립 대비" },
+                        shelters: [
+                            { name: "속초 청소년수련관 대피소", lat: 38.1925, lon: 128.5820, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "속초엑스포타워 광장 쉼터", lat: 38.1905, lon: 128.5855, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            chungbuk: {
+                sidoName: "충청북도",
+                cities: {
+                    cheongju: {
+                        name: "청주시 상당구",
+                        coords: { lat: 36.6372, lon: 127.4897 },
+                        station: "청주 기상대 (직지대로 관측소)",
+                        live: { temp: "13.1°C", feels: "11.7°C", precip: "0.0mm", wind: "42% · 2.1m/s", desc: "청주 무심천 맑음" },
+                        heat: { temp: "36.2°C", feels: "39.2°C", precip: "0.0mm", wind: "29% · 1.3m/s", desc: "폭염 경보 · 무심천 일대 온열질환 주의" },
+                        rain: { temp: "19.1°C", feels: "20.7°C", precip: "78.0mm", wind: "87% · 5.7m/s", desc: "호우 주의보 · 무심천 둔치 주차장 차량 이동" },
+                        snow: { temp: "-3.6°C", feels: "-8.0°C", precip: "14.0cm", wind: "71% · 4.8m/s", desc: "대설 주의보 · 청주 도심 제설 작업" },
+                        shelters: [
+                            { name: "청주 올림피아센터 대피쉼터", lat: 36.6395, lon: 127.4920, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "상당구청 무더위한파쉼터", lat: 36.6375, lon: 127.4900, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    chungju: {
+                        name: "충주시",
+                        coords: { lat: 36.9910, lon: 127.9259 },
+                        station: "충주 기상관측소 (교현동)",
+                        live: { temp: "12.8°C", feels: "11.4°C", precip: "0.0mm", wind: "40% · 2.0m/s", desc: "탄금호 및 충주댐 일원 맑음" },
+                        heat: { temp: "35.5°C", feels: "38.4°C", precip: "0.0mm", wind: "28% · 1.2m/s", desc: "폭염 경보 · 야외 활동 주의" },
+                        rain: { temp: "18.9°C", feels: "20.4°C", precip: "80.0mm", wind: "88% · 6.0m/s", desc: "호우 주의보 · 충주호 인근 주의" },
+                        snow: { temp: "-4.0°C", feels: "-8.5°C", precip: "16.0cm", wind: "74% · 5.1m/s", desc: "대설 주의보 · 충주댐 권역 제설" },
+                        shelters: [
+                            { name: "충주 호암체육관 쉼터", lat: 36.9745, lon: 127.9310, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "교현동 행정복지센터 쉼터", lat: 36.9885, lon: 127.9350, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            chungnam: {
+                sidoName: "충청남도",
+                cities: {
+                    cheonan: {
+                        name: "천안시 동남구",
+                        coords: { lat: 36.8151, lon: 127.1139 },
+                        station: "천안 관측소 (신부동)",
+                        live: { temp: "12.6°C", feels: "11.1°C", precip: "0.0mm", wind: "47% · 3.0m/s", desc: "천안 도심 가을 맑음" },
+                        heat: { temp: "35.5°C", feels: "38.5°C", precip: "0.0mm", wind: "33% · 1.6m/s", desc: "폭염 경보 · 야외 활동 자제" },
+                        rain: { temp: "18.6°C", feels: "20.0°C", precip: "76.0mm", wind: "89% · 6.2m/s", desc: "호우 주의보 · 천안천 산책로 통제" },
+                        snow: { temp: "-4.1°C", feels: "-8.6°C", precip: "15.0cm", wind: "76% · 5.3m/s", desc: "대설 주의보 · 천안역 및 도심 제설" },
+                        shelters: [
+                            { name: "천안 유관순체육관 쉼터", lat: 36.8185, lon: 127.1180, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "동남구청 무더위한파쉼터", lat: 36.8075, lon: 127.1510, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    asan: {
+                        name: "아산시",
+                        coords: { lat: 36.7898, lon: 127.0018 },
+                        station: "아산 관측소 (온천동)",
+                        live: { temp: "12.7°C", feels: "11.2°C", precip: "0.0mm", wind: "48% · 3.1m/s", desc: "온양온천 및 신도시 맑음" },
+                        heat: { temp: "35.6°C", feels: "38.6°C", precip: "0.0mm", wind: "34% · 1.7m/s", desc: "폭염 경보 · 야외 활동 주의" },
+                        rain: { temp: "18.7°C", feels: "20.1°C", precip: "77.0mm", wind: "90% · 6.4m/s", desc: "호우 주의보 · 곡교천 인근 주의" },
+                        snow: { temp: "-4.0°C", feels: "-8.4°C", precip: "14.5cm", wind: "75% · 5.2m/s", desc: "대설 주의보 · 온양온천역 주변 제설" },
+                        shelters: [
+                            { name: "아산 이순신종합운동장 쉼터", lat: 36.7750, lon: 127.0220, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "온양온천역 광장쉼터", lat: 36.7805, lon: 127.0035, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    seosan: {
+                        name: "서산시",
+                        coords: { lat: 36.7845, lon: 126.4503 },
+                        station: "서산 기상대 (갈산동 관측소)",
+                        live: { temp: "13.0°C", feels: "11.6°C", precip: "0.0mm", wind: "59% · 4.8m/s", desc: "서산 가로림만 맑고 바람 보통" },
+                        heat: { temp: "34.2°C", feels: "37.1°C", precip: "0.0mm", wind: "44% · 2.8m/s", desc: "폭염 주의보 · 서해안 야외활동 주의" },
+                        rain: { temp: "19.5°C", feels: "21.1°C", precip: "85.0mm", wind: "94% · 8.5m/s", desc: "호우 경보 · 서산 간척지 및 저지대 침수 주의" },
+                        snow: { temp: "-3.5°C", feels: "-7.8°C", precip: "17.0cm", wind: "81% · 6.8m/s", desc: "대설 주의보 · 서산시 일대 대설 경비" },
+                        shelters: [
+                            { name: "서산시 문화회관 안전쉼터", lat: 36.7860, lon: 126.4530, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "서산시민체육관 쉼터", lat: 36.7750, lon: 126.4620, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            gyeongbuk: {
+                sidoName: "경상북도",
+                cities: {
+                    pohang: {
+                        name: "포항시 북구",
+                        coords: { lat: 36.0437, lon: 129.3685 },
+                        station: "포항 기상대 (대잠동 관측소)",
+                        live: { temp: "14.6°C", feels: "13.4°C", precip: "0.0mm", wind: "52% · 3.9m/s", desc: "영일대 해수욕장 맑음" },
+                        heat: { temp: "37.0°C", feels: "40.1°C", precip: "0.0mm", wind: "35% · 2.0m/s", desc: "폭염 경보 · 포항 철강공단 및 해안가 주의" },
+                        rain: { temp: "20.8°C", feels: "22.5°C", precip: "82.0mm", wind: "92% · 8.1m/s", desc: "호우 경보 · 형산강 및 해안 저지대 침수 대비" },
+                        snow: { temp: "-2.2°C", feels: "-6.2°C", precip: "6.0cm", wind: "78% · 5.8m/s", desc: "대설 주의보 · 동해안 권역 제설" },
+                        shelters: [
+                            { name: "포항 실내체육관 안전쉼터", lat: 36.0125, lon: 129.3580, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "북구청 무더위한파쉼터", lat: 36.0440, lon: 129.3690, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    Gyeongju: {
+                        name: "경주시",
+                        coords: { lat: 35.8562, lon: 129.2247 },
+                        station: "경주 기상관측소 (성동동)",
+                        live: { temp: "14.2°C", feels: "12.9°C", precip: "0.0mm", wind: "45% · 2.8m/s", desc: "천년고도 경주 맑음" },
+                        heat: { temp: "36.8°C", feels: "39.8°C", precip: "0.0mm", wind: "30% · 1.5m/s", desc: "폭염 경보 · 황리단길 관광객 온열질환 주의" },
+                        rain: { temp: "20.2°C", feels: "21.8°C", precip: "78.0mm", wind: "89% · 7.0m/s", desc: "호우 주의보 · 형산강 및 문화재 주변 점검" },
+                        snow: { temp: "-2.5°C", feels: "-6.6°C", precip: "7.5cm", wind: "75% · 5.2m/s", desc: "대설 주의보 · 경주 시내 제설 작업" },
+                        shelters: [
+                            { name: "경주 실내체육관 쉼터", lat: 35.8620, lon: 129.2180, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "황오동 행정복지센터 쉼터", lat: 35.8450, lon: 129.2150, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    gumi: {
+                        name: "구미시",
+                        coords: { lat: 36.1195, lon: 128.3445 },
+                        station: "구미 기상관측소 (송정동)",
+                        live: { temp: "14.0°C", feels: "12.6°C", precip: "0.0mm", wind: "42% · 2.5m/s", desc: "구미 국가산단 맑음" },
+                        heat: { temp: "37.2°C", feels: "40.2°C", precip: "0.0mm", wind: "28% · 1.2m/s", desc: "폭염 경보 극심 · 야외 근로자 주의" },
+                        rain: { temp: "20.0°C", feels: "21.5°C", precip: "72.0mm", wind: "86% · 6.0m/s", desc: "호우 주의보 · 낙동강 인근 주의" },
+                        snow: { temp: "-2.8°C", feels: "-7.0°C", precip: "8.5cm", wind: "72% · 5.0m/s", desc: "대설 주의보 · 구미 산단로 제설" },
+                        shelters: [
+                            { name: "구미 박정희체육관 쉼터", lat: 36.1120, lon: 128.3520, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "송정동 행정복지센터 쉼터", lat: 36.1180, lon: 128.3420, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    andong: {
+                        name: "안동시",
+                        coords: { lat: 36.5684, lon: 128.7294 },
+                        station: "안동 기상대 (수상동 관측소)",
+                        live: { temp: "12.5°C", feels: "11.0°C", precip: "0.0mm", wind: "39% · 2.0m/s", desc: "안동하회마을 및 낙동강 맑음" },
+                        heat: { temp: "35.5°C", feels: "38.5°C", precip: "0.0mm", wind: "26% · 1.0m/s", desc: "폭염 경보 · 야외 활동 자제" },
+                        rain: { temp: "18.2°C", feels: "19.8°C", precip: "70.0mm", wind: "85% · 5.2m/s", desc: "호우 주의보 · 낙동강변 접근 금지" },
+                        snow: { temp: "-4.5°C", feels: "-9.2°C", precip: "15.0cm", wind: "70% · 4.8m/s", desc: "대설 주의보 · 안동권 폭설 제설" },
+                        shelters: [
+                            { name: "안동 실내체육관 안전쉼터", lat: 36.5640, lon: 128.7180, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "안동시청 무더위한파쉼터", lat: 36.5685, lon: 128.7296, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            gyeongnam: {
+                sidoName: "경상남도",
+                cities: {
+                    changwon: {
+                        name: "창원시 의창구",
+                        coords: { lat: 35.2538, lon: 128.6402 },
+                        station: "창원 기상대 (사림동 관측소)",
+                        live: { temp: "14.7°C", feels: "13.5°C", precip: "0.0mm", wind: "50% · 3.8m/s", desc: "창원 계획도시 맑음" },
+                        heat: { temp: "36.0°C", feels: "39.1°C", precip: "0.0mm", wind: "36% · 1.9m/s", desc: "폭염 경보 · 창원 공단 및 도심 주의" },
+                        rain: { temp: "21.2°C", feels: "23.0°C", precip: "85.0mm", wind: "93% · 8.5m/s", desc: "호우 경보 · 창원천 및 저지대 침수 주의" },
+                        snow: { temp: "-2.0°C", feels: "-5.9°C", precip: "5.5cm", wind: "76% · 5.5m/s", desc: "대설 주의보 · 창원터널 권역 제설" },
+                        shelters: [
+                            { name: "창원 실내체육관 대피쉼터", lat: 35.2350, lon: 128.6650, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "의창구청 무더위한파쉼터", lat: 35.2540, lon: 128.6405, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    jinju: {
+                        name: "진주시",
+                        coords: { lat: 35.1800, lon: 128.1076 },
+                        station: "진주 기상관측소 (상대동)",
+                        live: { temp: "13.8°C", feels: "12.4°C", precip: "0.0mm", wind: "43% · 2.2m/s", desc: "진주성 및 남강 맑음" },
+                        heat: { temp: "35.8°C", feels: "38.8°C", precip: "0.0mm", wind: "30% · 1.4m/s", desc: "폭염 경보 · 남강변 야외활동 주의" },
+                        rain: { temp: "19.8°C", feels: "21.4°C", precip: "76.0mm", wind: "88% · 6.0m/s", desc: "호우 주의보 · 남강 둔치 주차장 통제" },
+                        snow: { temp: "-3.0°C", feels: "-7.2°C", precip: "9.0cm", wind: "71% · 4.8m/s", desc: "대설 주의보 · 진주 시내 제설" },
+                        shelters: [
+                            { name: "진주실내체육관 쉼터", lat: 35.1765, lon: 128.1220, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "상대동 행정복지센터 쉼터", lat: 35.1810, lon: 128.1150, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    gimhae: {
+                        name: "김해시",
+                        coords: { lat: 35.2285, lon: 128.8894 },
+                        station: "김해 관측소 (부원동)",
+                        live: { temp: "14.4°C", feels: "13.1°C", precip: "0.0mm", wind: "48% · 3.5m/s", desc: "김해 평야 맑음" },
+                        heat: { temp: "36.2°C", feels: "39.3°C", precip: "0.0mm", wind: "34% · 1.7m/s", desc: "폭염 경보 · 야외 활동 자제" },
+                        rain: { temp: "20.5°C", feels: "22.2°C", precip: "82.0mm", wind: "91% · 7.8m/s", desc: "호우 경보 · 해반천 산책로 통제" },
+                        snow: { temp: "-2.4°C", feels: "-6.4°C", precip: "6.5cm", wind: "74% · 5.3m/s", desc: "대설 주의보 · 김해 경전철 권역 제설" },
+                        shelters: [
+                            { name: "김해실내체육관 쉼터", lat: 35.2420, lon: 128.8750, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "부원동 행정복지센터 쉼터", lat: 35.2280, lon: 128.8860, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    tongyeong: {
+                        name: "통영시",
+                        coords: { lat: 34.8544, lon: 128.4331 },
+                        station: "통영 기상대 (동호동 관측소)",
+                        live: { temp: "15.0°C", feels: "13.9°C", precip: "0.0mm", wind: "58% · 4.9m/s", desc: "한려해상 바다 맑음" },
+                        heat: { temp: "34.0°C", feels: "37.0°C", precip: "0.0mm", wind: "46% · 3.0m/s", desc: "폭염 주의보 · 섬 여행객 자외선 주의" },
+                        rain: { temp: "21.5°C", feels: "23.3°C", precip: "92.0mm", wind: "95% · 9.2m/s", desc: "호우 경보 · 통영항 및 해안 저지대 주의" },
+                        snow: { temp: "-1.5°C", feels: "-5.2°C", precip: "5.0cm", wind: "80% · 6.0m/s", desc: "대설 주의보 · 통영권 드문 눈 주의" },
+                        shelters: [
+                            { name: "통영 충무체육관 쉼터", lat: 34.8580, lon: 128.4250, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "동호동 행정복지센터 쉼터", lat: 34.8450, lon: 128.4320, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            },
+            jeju: {
+                sidoName: "제주특별자치도",
+                cities: {
+                    jeju_city: {
+                        name: "제주시",
+                        coords: { lat: 33.4996, lon: 126.5312 },
+                        station: "제주 기상청 (건입동 관측소)",
+                        live: { temp: "16.5°C", feels: "15.3°C", precip: "0.0mm", wind: "65% · 5.5m/s", desc: "제주 북부 맑고 온화함" },
+                        heat: { temp: "33.5°C", feels: "36.8°C", precip: "0.0mm", wind: "50% · 3.5m/s", desc: "폭염 주의보 · 해수욕장 및 야외활동 주의" },
+                        rain: { temp: "22.5°C", feels: "24.5°C", precip: "105.0mm", wind: "97% · 11.0m/s", desc: "호우 경보 · 한라산 및 해안도로 폭우 주의" },
+                        snow: { temp: "-1.0°C", feels: "-6.0°C", precip: "25.0cm", wind: "88% · 8.0m/s", desc: "대설 경보 · 1100도로 및 산간 폭설 통제" },
+                        shelters: [
+                            { name: "제주 한라체육관 대피쉼터", lat: 33.4980, lon: 126.5165, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "제주시청 무더위한파쉼터", lat: 33.4998, lon: 126.5315, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    },
+                    seogwipo: {
+                        name: "서귀포시",
+                        coords: { lat: 33.2541, lon: 126.5601 },
+                        station: "서귀포 기상대 (서호동 관측소)",
+                        live: { temp: "17.2°C", feels: "16.1°C", precip: "0.0mm", wind: "60% · 5.0m/s", desc: "서귀포 남부 맑고 따뜻함" },
+                        heat: { temp: "33.8°C", feels: "37.0°C", precip: "0.0mm", wind: "48% · 3.2m/s", desc: "폭염 주의보 · 남해안 자외선 매우 높음" },
+                        rain: { temp: "23.0°C", feels: "25.0°C", precip: "115.0mm", wind: "98% · 11.5m/s", desc: "호우 경보 · 한라산 남측 폭우 및 산사태 주의" },
+                        snow: { temp: "-0.5°C", feels: "-5.5°C", precip: "22.0cm", wind: "85% · 7.5m/s", desc: "대설 경보 · 산간도로 대설 교통 통제" },
+                        shelters: [
+                            { name: "서귀포 올림픽기념국민생활관 쉼터", lat: 33.2485, lon: 126.5085, status: "24시간 개방", tag: "공공 대피소" },
+                            { name: "서귀포시청 무더위한파쉼터", lat: 33.2545, lon: 126.5605, status: "운영중", tag: "지정 쉼터" }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const modeTemplates = {
+            live: {
+                isSim: false,
+                lamp: 'green',
+                feelsColor: "text-forest-700",
+                precipLabel: "강수량",
+                boxClass: "bg-forest-50 border-forest-200",
+                iconWrapClass: "bg-forest-700 text-white",
+                iconClass: "fa-solid fa-leaf",
+                badgeClass: "bg-emerald-600 text-white",
+                badgeText: "🟢 기후 안전",
+                titleClass: "text-forest-900",
+                titleText: "늦가을 특보 없음 (평온)",
+                descClass: "text-forest-800",
+                actionBtn1: "지역 안전쉼터 보기",
+                missionTag: "늦가을·일상 탄소감축 미션",
+                outfitText: "추천 옷차림: 가디건, 자켓, 얇은 니트, 긴바지 (일교차 대비 겉옷 지참)",
+                itemsText: "필수 준비물: ☀️ 썬크림(자외선 차단), 💧 개인 텀블러, 모자",
+                recTagText: "가을 겉옷 필수",
+                recIcon: "fa-solid fa-shirt",
+                missionPool: [
+                    { id: "n1", title: "가까운 거리 걷거나 자전거 타기", desc: "선선한 가을 날씨에 자동차 대신 걸으며 탄소를 줄여요", co2: 1.2, icon: "🚲" },
+                    { id: "n2", title: "가을철 실내 적정온도(20°C) 유지하기", desc: "성급한 난방 대신 가디건·무릎담요로 에너지를 아껴요", co2: 0.7, icon: "🧥" },
+                    { id: "n3", title: "급식·식사 남기지 않고 다 먹기", desc: "음식물 쓰레기를 줄이면 메탄가스 배출이 크게 줄어요", co2: 0.6, icon: "🥗" },
+                    { id: "n4", title: "디지털 탄소 발자국 줄이기 (메일함 비우기)", desc: "불필요한 이메일과 데이터를 삭제하여 서버 전력 소비를 줄여요", co2: 0.4, icon: "💻" },
+                    { id: "n5", title: "외출 시 집안 대기전력 플러그 뽑기", desc: "사용하지 않는 가전제품의 대기전력을 차단해요", co2: 0.5, icon: "🔌" },
+                    { id: "n6", title: "장바구니 및 에코백 지참하여 쇼핑하기", desc: "일회용 비닐봉투 대신 다회용 가방을 사용해요", co2: 0.8, icon: "🛍️" }
+                ]
+            },
+            heat: {
+                isSim: true,
+                lamp: 'red',
+                feelsColor: "text-red-600",
+                precipLabel: "강수량",
+                boxClass: "bg-red-50 border-red-200",
+                iconWrapClass: "bg-red-600 text-white",
+                iconClass: "fa-solid fa-sun",
+                badgeClass: "bg-red-600 text-white",
+                badgeText: "🔴 폭염 경보(모의)",
+                titleClass: "text-red-900",
+                titleText: "폭염 위기 대응 시뮬레이션",
+                descClass: "text-red-800",
+                actionBtn1: "무더위쉼터 찾기",
+                missionTag: "여름철 폭염 대비 미션",
+                outfitText: "추천 옷차림: 쿨맵시 반팔, 린넨 소재 옷, 통기성 좋은 밝은 옷",
+                itemsText: "필수 준비물: ☀️ 썬크림(SPF 50+), 🧢 챙 넓은 모자, 양산, 💧 얼음물 텀블러",
+                recTagText: "자외선·온열질환 주의",
+                recIcon: "fa-solid fa-sun",
+                missionPool: [
+                    { id: "h1", title: "에어컨 적정온도 26°C 유지하기", desc: "냉방 온도 1°C만 높여도 전력과 탄소가 크게 줄어요", co2: 0.5, icon: "❄️" },
+                    { id: "h2", title: "낮 시간 커튼·블라인드로 햇빛 가리기", desc: "실내 온도를 2°C 낮춰 냉방 에너지를 아껴요", co2: 0.3, icon: "🪟" },
+                    { id: "h3", title: "시원한 물 개인 텀블러에 담아 마시기", desc: "일회용 플라스틱 생수병 대신 텀블러를 사용해요", co2: 0.2, icon: "🥤" },
+                    { id: "h4", title: "쿨맵시(시원하고 간편한 옷차림) 실천하기", desc: "체감온도를 낮춰 냉방 기기 사용량을 줄여요", co2: 0.4, icon: "👕" },
+                    { id: "h5", title: "한낮(12시~17시) 야외 운동 및 외출 자제하기", desc: "온열질환을 예방하고 불필요한 에너지 소비를 막아요", co2: 0.6, icon: "🌳" }
+                ]
+            },
+            rain: {
+                isSim: true,
+                lamp: 'yellow',
+                feelsColor: "text-amber-700",
+                precipLabel: "시간당 강수",
+                boxClass: "bg-amber-50 border-amber-300",
+                iconWrapClass: "bg-amber-600 text-white",
+                iconClass: "fa-solid fa-cloud-showers-heavy",
+                badgeClass: "bg-amber-600 text-white",
+                badgeText: "🟡 호우 주의(모의)",
+                titleClass: "text-amber-950",
+                titleText: "집중호우 대응 시뮬레이션",
+                descClass: "text-amber-900",
+                actionBtn1: "침수 대피소 찾기",
+                missionTag: "장마철 폭우 대비 미션",
+                outfitText: "추천 옷차림: 방수 바람막이, 레인부츠 또는 젖어도 되는 신발, 긴바지",
+                itemsText: "필수 준비물: ☔ 튼튼한 우산, 우비(레인코트), 방수 가방 커버",
+                recTagText: "방수 용품 필수",
+                recIcon: "fa-solid fa-umbrella",
+                missionPool: [
+                    { id: "r1", title: "집·학교 앞 빗물받이 쓰레기 치우기", desc: "낙엽과 담배꽁초를 치우면 도심 침수를 막을 수 있어요", co2: 0.4, icon: "🧹" },
+                    { id: "r2", title: "자가용 대신 대중교통 이용하기", desc: "빗길 교통사고도 예방하고 온실가스도 줄여요", co2: 1.5, icon: "🚌" },
+                    { id: "r3", title: "안 쓰는 가전제품 대기전력 플러그 뽑기", desc: "낙뢰 피해 예방과 전기 절약을 동시에 실천해요", co2: 0.3, icon: "🔌" },
+                    { id: "r4", title: "침수 우려 지역 안내판 및 대피로 미리 확인하기", desc: "비상 상황 발생 시 신속하게 대피할 수 있도록 준비해요", co2: 0.5, icon: "🗺️" },
+                    { id: "r5", title: "외출 시 우산과 레인커버 재사용 확인하기", desc: "일회용 우비 구매를 줄이고 기존 우산을 정비해요", co2: 0.4, icon: "☔" }
+                ]
+            },
+            snow: {
+                isSim: true,
+                lamp: 'red',
+                feelsColor: "text-sky-700",
+                precipLabel: "최심 신적설",
+                boxClass: "bg-sky-50 border-sky-300",
+                iconWrapClass: "bg-sky-700 text-white",
+                iconClass: "fa-solid fa-snowflake",
+                badgeClass: "bg-red-600 text-white",
+                badgeText: "🔴 대설 경보(모의)",
+                titleClass: "text-sky-950",
+                titleText: "폭설·한파 대응 시뮬레이션",
+                descClass: "text-sky-900",
+                actionBtn1: "한파·대설쉼터 찾기",
+                missionTag: "겨울철 폭설 대비 미션",
+                outfitText: "추천 옷차림: 패딩, 기모 바지, 방한 목도리, 장갑, 미끄럽지 않은 방한화",
+                itemsText: "필수 준비물: 🧤 방한 장갑, 귀마개, 핫팩, 우산",
+                recTagText: "한파·빙판길 대비",
+                recIcon: "fa-solid fa-snowflake",
+                missionPool: [
+                    { id: "s1", title: "내 집·학교 앞 눈 쓸기 함께하기", desc: "보행자 낙상 사고도 막고 제설제 사용을 줄여 토양을 보호해요", co2: 0.5, icon: "⛄" },
+                    { id: "s2", title: "내복·무릎담요 입고 난방온도 20°C 지키기", desc: "보일러 온도를 1°C만 낮춰도 가구당 연간 230kg의 탄소를 줄여요", co2: 0.8, icon: "🧣" },
+                    { id: "s3", title: "폭설 시 승용차 대신 지하철·버스 타기", desc: "도로 정체와 온실가스 배출을 동시에 줄여요", co2: 1.6, icon: "🚇" },
+                    { id: "s4", title: "수도계량기 보온 상태 점검 및 동파 예방", desc: "에너지 손실을 막고 자원을 효율적으로 아껴요", co2: 0.4, icon: "🧊" },
+                    { id: "s5", title: "겨울철 두꺼운 이불·외투 다회 재사용 전 관리하기", desc: "불필요한 세탁과 자원 낭비를 줄여요", co2: 0.5, icon: "🧥" }
+                ]
+            }
+        };
+
+        const ecoPlacesData = [
+            { name: "우리 동네 제로웨이스트 리필스테이션", offsetLat: 0.0021, offsetLon: 0.0018, status: "영업중 · 세제/곡물 리필 가능", tag: "용기 지참 필수", icon: "🌿" },
+            { name: "다회용컵(텀블러) 할인 그린카페", offsetLat: -0.0012, offsetLon: 0.0014, status: "영업중 · 텀블러 지참 시 500원 할인", tag: "탄소중립 포인트", icon: "☕" },
+            { name: "폐건전지·투명페트병 스마트 수거함", offsetLat: 0.0015, offsetLon: -0.0019, status: "24시간 운영 · 포인트 자동 적립", tag: "자원순환 거점", icon: "♻️" }
+        ];
+
+        // ==========================================
+        // 4. 핵심 기능 함수
+        // ==========================================
+        function updateCurrentDate() {
+            const now = new Date();
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const str = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]}) · 기상청 기준`;
+            const el = document.getElementById('current-date-display');
+            if (el) el.textContent = str;
+        }
+
+        function getCurrentCityData() {
+            return koreaWeatherDB[currentSido].cities[currentCity];
+        }
+
+        // 1단계: 시·도 변경 시 해당 시·도의 구체적 도시 목록 채우기
+        function changeSido(sidoKey) {
+            currentSido = sidoKey;
+            const cities = koreaWeatherDB[sidoKey].cities;
+            const firstCityKey = Object.keys(cities)[0];
+            currentCity = firstCityKey;
+            populateCityOptions(sidoKey);
+            updateWeatherAndRegionUI();
+            if (!document.getElementById('info-modal').classList.contains('hidden')) {
+                switchModalTab(currentModalTab);
+            }
+            showToast(`${koreaWeatherDB[sidoKey].sidoName} ${cities[firstCityKey].name} 기상 데이터를 불러왔습니다 📍`, true);
+        }
+
+        // 시·군·구 드롭다운 옵션 동적 생성
+        function populateCityOptions(sidoKey) {
+            const citySelect = document.getElementById('city-select');
+            const cities = koreaWeatherDB[sidoKey].cities;
+            citySelect.innerHTML = '';
+
+            Object.keys(cities).forEach(cityKey => {
+                const opt = document.createElement('option');
+                opt.value = cityKey;
+                opt.textContent = `📍 ${cities[cityKey].name}`;
+                if (cityKey === currentCity) opt.selected = true;
+                citySelect.appendChild(opt);
+            });
+        }
+
+        // 2단계: 구체적 도시(목포, 서울, 광주, 전주, 부산 등) 변경 시 호출
+        function changeCity(cityKey) {
+            currentCity = cityKey;
+            const cityData = getCurrentCityData();
+            updateWeatherAndRegionUI();
+            if (!document.getElementById('info-modal').classList.contains('hidden')) {
+                switchModalTab(currentModalTab);
+            }
+            showToast(`${cityData.name} 기상청 관측소 데이터로 전환되었습니다 📍`, true);
+        }
+
+        // 날씨 모드 변경 (현재 실시간 / 폭염 모의 / 폭우 모의 / 폭설 모의)
+        function setWeatherMode(mode) {
+            currentMode = mode;
+            updateWeatherAndRegionUI();
+        }
+
+        // 지역 + 날씨 모드 통합 UI 업데이트
+        function updateWeatherAndRegionUI() {
+            const sidoData = koreaWeatherDB[currentSido];
+            const cityData = getCurrentCityData();
+            const tmpl = modeTemplates[currentMode];
+            const kma = cityData[currentMode];
+
+            // 상단 탭 버튼 스타일 업데이트
+            ['live', 'heat', 'rain', 'snow'].forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                if (!btn) return;
+                if (m === currentMode) {
+                    btn.className = "flex-1 py-1.5 rounded-lg text-[11px] font-extrabold transition-all bg-white text-forest-900 shadow-sm cursor-pointer";
+                } else {
+                    btn.className = "flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all text-forest-200 hover:text-white cursor-pointer";
+                }
+            });
+
+            // 관측소 및 실시간/모의 상태 배지 업데이트
+            document.getElementById('station-badge').innerHTML = `<i class="fa-solid fa-tower-broadcast mr-1.5"></i> ${cityData.station}`;
+            const statusPill = document.getElementById('mode-status-pill');
+            if (tmpl.isSim) {
+                statusPill.className = "px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-900";
+                statusPill.textContent = "재난 대비 모의훈련";
+            } else {
+                statusPill.className = "px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 text-emerald-800";
+                statusPill.textContent = "현재 계절 실시간";
+            }
+
+            // 3색 신호등 램프 점등 업데이트 (🔴위험 / 🟡주의 / 🟢안전)
+            const lampRed = document.getElementById('lamp-red');
+            const lampYellow = document.getElementById('lamp-yellow');
+            const lampGreen = document.getElementById('lamp-green');
+
+            lampRed.className = tmpl.lamp === 'red' 
+                ? "w-3.5 h-3.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444] scale-110 transition-all" 
+                : "w-3.5 h-3.5 rounded-full bg-red-950/60 transition-all";
+            lampYellow.className = tmpl.lamp === 'yellow' 
+                ? "w-3.5 h-3.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24] scale-110 transition-all" 
+                : "w-3.5 h-3.5 rounded-full bg-amber-950/60 transition-all";
+            lampGreen.className = tmpl.lamp === 'green' 
+                ? "w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] scale-110 transition-all" 
+                : "w-3.5 h-3.5 rounded-full bg-emerald-950/60 transition-all";
+
+            // 기상청 포털 상세 데이터 업데이트
+            document.getElementById('kma-temp').textContent = kma.temp;
+            const feelsEl = document.getElementById('kma-feels');
+            feelsEl.textContent = kma.feels;
+            feelsEl.className = `text-sm font-black mt-0.5 ${tmpl.feelsColor}`;
+            document.getElementById('kma-precip-label').textContent = tmpl.precipLabel;
+            document.getElementById('kma-precip').textContent = kma.precip;
+            document.getElementById('kma-wind').textContent = kma.wind;
+            document.getElementById('kma-source-text').textContent = `출처: 기상청 기상자료개방포털 (data.kma.go.kr) · ${sidoData.sidoName} ${cityData.name} 관측`;
+
+            // 신호등 카드 UI 업데이트
+            const signalBox = document.getElementById('signal-box');
+            signalBox.className = `rounded-2xl p-5 border-2 transition-colors duration-300 ${tmpl.boxClass}`;
+            
+            document.getElementById('signal-icon-wrap').className = `relative w-16 h-16 rounded-full flex items-center justify-center text-3xl shrink-0 shadow-md ${tmpl.iconWrapClass}`;
+            document.getElementById('signal-icon').className = tmpl.iconClass;
+            
+            const t = i18nDict[currentLang] || i18nDict.ko;
+            const modeLocale = t.modes[currentMode];
+
+            const badgeEl = document.getElementById('signal-badge');
+            badgeEl.className = `px-2.5 py-0.5 rounded-md text-xs font-black ${tmpl.badgeClass}`;
+            badgeEl.textContent = modeLocale.badge;
+            
+            document.getElementById('signal-title').className = `text-lg font-black ${tmpl.titleClass}`;
+            document.getElementById('signal-title').textContent = modeLocale.title;
+            
+            const descEl = document.getElementById('signal-desc');
+            descEl.className = `text-sm font-semibold mt-1.5 leading-snug ${tmpl.descClass}`;
+            descEl.textContent = `[${cityData.name}] ${kma.desc}`;
+
+            // NEW: 맞춤 옷차림 및 준비물 정보 반영
+            document.getElementById('rec-main-icon').className = tmpl.recIcon;
+            document.getElementById('rec-tag').textContent = modeLocale.recTag;
+            document.getElementById('rec-outfit').textContent = tmpl.outfitText;
+            document.getElementById('rec-items').textContent = tmpl.itemsText;
+
+            document.getElementById('action-btn-1').textContent = modeLocale.btn1;
+            document.getElementById('mission-season-tag').textContent = modeLocale.missionTag;
+
+            renderMissions();
+            updateDashboard();
+        }
+
+        // 미션 목록 렌더링 (클릭 시 새로운 미션으로 바로 교체)
+        function renderMissions() {
+            const listEl = document.getElementById('mission-list');
+            const pool = modeTemplates[currentMode].missionPool;
+            listEl.innerHTML = '';
+
+            // 각 모드별로 활성화된 3개의 미션을 세션스토리지 또는 로컬스테이트에서 가져오거나 초기 할당
+            let activeMissionIds = JSON.parse(localStorage.getItem(`greensafe_active_${currentMode}`)) || [];
+            
+            // 만약 현재 활성화된 미션이 3개 미만이거나 없으면 풀에서 골라 채우기
+            if (activeMissionIds.length !== 3) {
+                // 아직 완료되지 않은 미션 우선 혹은 풀에서 3개 선택
+                const available = pool.filter(m => !activeMissionIds.includes(m.id));
+                while (activeMissionIds.length < 3 && available.length > 0) {
+                    const randIdx = Math.floor(Math.random() * available.length);
+                    activeMissionIds.push(available.splice(randIdx, 1)[0].id);
+                }
+                // 만약 풀 전체가 다 차있다면 순환
+                if (activeMissionIds.length < 3) {
+                    activeMissionIds = pool.slice(0, 3).map(m => m.id);
+                }
+                localStorage.setItem(`greensafe_active_${currentMode}`, JSON.stringify(activeMissionIds));
+            }
+
+            const activeMissions = activeMissionIds.map(id => pool.find(m => m.id === id)).filter(Boolean);
+
+            activeMissions.forEach(m => {
+                const record = completedMissions[m.id] || { count: 0, totalCo2: 0 };
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                // 미션 클릭 시: 탄소 감축 누적 + 즉시 새로운 미션으로 교체
+                btn.onclick = () => completeAndReplaceMission(m.id, m.co2, m.title);
+                btn.className = "w-full text-left p-4 rounded-2xl border-2 transition-all btn-press flex items-center justify-between cursor-pointer bg-white border-forest-100 hover:border-forest-400 text-forest-900 shadow-sm";
+
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3.5 pr-2">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-forest-50">
+                            ${m.icon}
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <p class="font-extrabold text-base leading-snug text-forest-900">
+                                    ${m.title}
+                                </p>
+                            </div>
+                            <p class="text-xs mt-1 font-medium text-forest-600">
+                                ${m.desc}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end shrink-0">
+                        <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-forest-100 text-forest-800">
+                            -${m.co2}kg
+                        </span>
+                        <span class="mt-2 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                            완료하고 새 미션 받기 ✨
+                        </span>
+                    </div>
+                `;
+                listEl.appendChild(btn);
+            });
+        }
+
+        // 미션 완료 후 즉시 새로운 미션으로 교체하는 함수
+        function completeAndReplaceMission(id, co2, title) {
+            // 1. 탄소 감축량 누적 저장
+            if (!completedMissions[id]) {
+                completedMissions[id] = { count: 0, totalCo2: 0 };
+            }
+            completedMissions[id].count += 1;
+            completedMissions[id].totalCo2 = Number((completedMissions[id].totalCo2 + co2).toFixed(1));
+            localStorage.setItem('greensafe_missions', JSON.stringify(completedMissions));
+
+            // 2. 해당 미션을 현재 활성 목록에서 제거하고 새로운 미션으로 대체
+            let activeMissionIds = JSON.parse(localStorage.getItem(`greensafe_active_${currentMode}`)) || [];
+            const pool = modeTemplates[currentMode].missionPool;
+            
+            // 풀에 있는 전체 ID 중 현재 활성화되지 않은 것들 찾기
+            const availablePoolIds = pool.map(m => m.id).filter(poolId => !activeMissionIds.includes(poolId));
+            
+            const idx = activeMissionIds.indexOf(id);
+            if (idx !== -1) {
+                if (availablePoolIds.length > 0) {
+                    // 남은 새로운 미션 중 하나로 교체
+                    const nextId = availablePoolIds[Math.floor(Math.random() * availablePoolIds.length)];
+                    activeMissionIds[idx] = nextId;
+                } else {
+                    // 풀이 모두 소진되었다면 순서대로 순환
+                    const nextId = pool[(pool.findIndex(m => m.id === id) + 3) % pool.length].id;
+                    activeMissionIds[idx] = nextId;
+                }
+            }
+
+            localStorage.setItem(`greensafe_active_${currentMode}`, JSON.stringify(activeMissionIds));
+
+            // 3. 오늘 요일 주간 실천 도장판에 도장 꾹 찍기!
+            stampTodayInWeeklyBoard();
+
+            // 4. UI 갱신
+            renderMissions();
+            updateDashboard();
+            showToast(`'${title}' 완료! 탄소 -${co2}kg 감축 & 오늘의 도장이 찍혔습니다 🌱`, true);
+        }
+
+        // 오늘 요일(월~일) 도장 찍기 및 주간 도장판 렌더링
+        function getTodayDayKey() {
+            const dayIdx = new Date().getDay(); // 0(일) ~ 6(토)
+            const keys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+            return keys[dayIdx];
+        }
+
+        function stampTodayInWeeklyBoard() {
+            const todayKey = getTodayDayKey();
+            weeklyStamps[todayKey] = true;
+            localStorage.setItem('greensafe_weekly_stamps', JSON.stringify(weeklyStamps));
+            renderWeeklyStamps();
+        }
+
+        function renderWeeklyStamps() {
+            const boardEl = document.getElementById('weekly-stamp-board');
+            const countEl = document.getElementById('weekly-stamp-count');
+            if (!boardEl || !countEl) return;
+
+            const t = i18nDict[currentLang] || i18nDict.ko;
+            const dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            const todayKey = getTodayDayKey();
+            let stampedCount = 0;
+
+            boardEl.innerHTML = '';
+            dayKeys.forEach((key, idx) => {
+                const isStamped = !!weeklyStamps[key];
+                const isToday = key === todayKey;
+                if (isStamped) stampedCount++;
+
+                const cell = document.createElement('div');
+                cell.className = `flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all ${
+                    isStamped 
+                        ? 'bg-emerald-500/25 border-emerald-400 text-white shadow-sm' 
+                        : isToday 
+                            ? 'bg-forest-800/90 border-emerald-300/60 text-emerald-200' 
+                            : 'bg-forest-950/50 border-forest-800 text-forest-400'
+                }`;
+
+                cell.innerHTML = `
+                    <span class="text-[10px] font-extrabold mb-1">${t.days[idx]}</span>
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-sm ${
+                        isStamped 
+                            ? 'bg-emerald-400 text-forest-950 font-black shadow-inner scale-105' 
+                            : 'border border-dashed border-forest-600 text-forest-600'
+                    }">
+                        ${isStamped ? '<i class="fa-solid fa-leaf"></i>' : '·'}
+                    </div>
+                `;
+                boardEl.appendChild(cell);
+            });
+
+            countEl.textContent = t.stampWeeklyFmt(stampedCount);
+        }
+
+        // 상단 탄소 감축 대시보드 수치 업데이트
+        function updateDashboard() {
+            let totalCo2 = 0;
+            let totalCount = 0;
+
+            Object.values(completedMissions).forEach(item => {
+                if (item && typeof item === 'object') {
+                    totalCo2 += (item.totalCo2 || 0);
+                    totalCount += (item.count || 0);
+                } else if (typeof item === 'number') {
+                    totalCo2 += item;
+                    totalCount += 1;
+                }
+            });
+
+            const totalTrees = totalCo2 / 6.6;
+
+            document.getElementById('total-co2').textContent = totalCo2.toFixed(1);
+            document.getElementById('total-trees').textContent = totalTrees.toFixed(1);
+
+            const dailyGoal = 3;
+            const currentDaily = Math.min(totalCount, dailyGoal);
+            const percent = Math.round((currentDaily / dailyGoal) * 100);
+            document.getElementById('progress-text').textContent = `${totalCount}회 실천 완료`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+        }
+
+        // 기록 초기화
+        function resetProgress() {
+            completedMissions = {};
+            weeklyStamps = {};
+            localStorage.removeItem('greensafe_missions');
+            localStorage.removeItem('greensafe_weekly_stamps');
+            ['live', 'heat', 'rain', 'snow'].forEach(m => {
+                localStorage.removeItem(`greensafe_active_${m}`);
+            });
+            renderMissions();
+            renderWeeklyStamps();
+            updateDashboard();
+            showToast("누적 실천 기록과 주간 도장판이 초기화되었습니다.", false);
+        }
+
+        // 두 위경도 좌표 간 실제 거리 및 도보 소요시간 계산 (Haversine 공식)
+        function calculateDistanceInfo(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // 지구 반지름 (미터)
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const meters = Math.round(R * c);
+
+            const walkMinutes = Math.max(1, Math.round(meters / 67)); // 성인 평균 도보 속도 약 4km/h (분당 67m)
+            const distStr = meters >= 1000 ? `${(meters / 1000).toFixed(1)}km` : `${meters}m`;
+
+            return {
+                meters: meters,
+                text: `약 ${distStr} (도보 ${walkMinutes}분)`
+            };
+        }
+
+        // 모달 내 탭 전환 및 안전쉼터 / 친환경·제로웨이스트 통합 추천 렌더링
+        function switchModalTab(type) {
+            currentModalTab = type;
+            const tabShelter = document.getElementById('modal-tab-shelter');
+            const tabEco = document.getElementById('modal-tab-eco');
+
+            if (type === 'shelter') {
+                tabShelter.className = "py-2 rounded-xl text-xs font-extrabold bg-forest-800 text-white shadow-sm transition cursor-pointer";
+                tabEco.className = "py-2 rounded-xl text-xs font-extrabold text-forest-700 hover:bg-forest-100 transition cursor-pointer";
+            } else {
+                tabEco.className = "py-2 rounded-xl text-xs font-extrabold bg-forest-800 text-white shadow-sm transition cursor-pointer";
+                tabShelter.className = "py-2 rounded-xl text-xs font-extrabold text-forest-700 hover:bg-forest-100 transition cursor-pointer";
+            }
+
+            const container = document.getElementById('modal-list-container');
+            container.innerHTML = '';
+
+            const cityData = getCurrentCityData();
+            const baseCoords = userCoords || cityData.coords;
+
+            let targetList = [];
+            if (type === 'shelter') {
+                targetList = cityData.shelters.map((s, idx) => {
+                    const distInfo = calculateDistanceInfo(baseCoords.lat, baseCoords.lon, s.lat, s.lon);
+                    return {
+                        ...s,
+                        fullSearchName: `${cityData.name} ${s.name}`,
+                        dist: distInfo.text,
+                        meters: distInfo.meters,
+                        icon: idx === 0 ? "🏢" : "📚"
+                    };
+                });
+            } else {
+                targetList = ecoPlacesData.map(eco => {
+                    const targetLat = cityData.coords.lat + eco.offsetLat;
+                    const targetLon = cityData.coords.lon + eco.offsetLon;
+                    const distInfo = calculateDistanceInfo(baseCoords.lat, baseCoords.lon, targetLat, targetLon);
+                    const fullName = `${cityData.name} ${eco.name}`;
+                    return {
+                        ...eco,
+                        name: fullName,
+                        fullSearchName: fullName,
+                        dist: distInfo.text,
+                        meters: distInfo.meters
+                    };
+                });
+            }
+
+            targetList.sort((a, b) => a.meters - b.meters);
+
+            const nearest = targetList[0];
+            document.getElementById('modal-title').textContent = `[${cityData.name}] 안전쉼터 & 그린 추천`;
+            document.getElementById('modal-subtitle').textContent = `가장 가까운 곳: ${nearest.name} (${nearest.dist})`;
+
+            targetList.forEach((p, idx) => {
+                const naverMapUrl = `https://map.naver.com/p/search/${encodeURIComponent(p.fullSearchName)}`;
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-2xl border ${idx === 0 ? 'bg-emerald-50/60 border-emerald-300' : 'bg-forest-50/60 border-forest-100'} space-y-2`;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start space-x-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-white border border-forest-100 flex items-center justify-center text-lg shrink-0 shadow-sm">
+                                ${p.icon}
+                            </div>
+                            <div>
+                                <div class="flex flex-wrap items-center gap-1">
+                                    ${idx === 0 ? '<span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-emerald-600 text-white">최단거리 추천</span>' : ''}
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-forest-200/70 text-forest-900">${p.tag}</span>
+                                </div>
+                                <h4 class="font-extrabold text-sm text-forest-900 mt-1">${p.name}</h4>
+                                <p class="text-xs font-bold text-forest-700 mt-0.5">${p.dist} · ${p.status}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="${naverMapUrl}" target="_blank" rel="noopener noreferrer" class="w-full btn-press bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center shadow-sm transition">
+                        <i class="fa-solid fa-map-location-dot mr-1.5"></i> 네이버 지도에서 위치·길찾기 보기
+                    </a>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 통합 지역 안전쉼터 & 친환경 추천 모달 열기
+        function openActionModal() {
+            const modal = document.getElementById('info-modal');
+            switchModalTab('shelter');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('info-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // 행동요령 귀엽고 친절하고 상냥한 목소리 안내 (TTS 고도화)
+        function speakGuidance() {
+            if (!('speechSynthesis' in window)) {
+                showToast("이 브라우저는 음성 안내를 지원하지 않습니다.", false);
+                return;
+            }
+
+            window.speechSynthesis.cancel(); // 이전 음성 즉시 중단 및 초기화
+
+            const cityData = getCurrentCityData();
+            let text = "";
+
+            if (currentLang === 'ko') {
+                if (currentMode === 'live') {
+                    text = `안녕! 오늘 ${cityData.name} 날씨는 정말 맑고 상쾌해요! 일교차에 대비해서 따뜻한 겉옷 꼭 챙기고, 오늘 하루도 친환경 실천으로 지구를 지켜봐요!`;
+                } else if (currentMode === 'heat') {
+                    text = `앗, 주의해주세요! ${cityData.name}에 폭염 경보가 내려졌어요. 시원한 물을 자주 마시고, 한낮에는 야외활동을 피하며 무더위 쉼터에서 시원하게 쉬어가세요!`;
+                } else if (currentMode === 'rain') {
+                    text = `조심하세요! ${cityData.name}에 집중호우가 예상되고 있어요. 빗물받이 주변을 살피고, 하천이나 저지대에는 절대 가까이 가지 말아주세요!`;
+                } else if (currentMode === 'snow') {
+                    text = `알려드려요! ${cityData.name}에 대설 경보가 발령되었답니다. 미끄러운 빙판길 조심하시고, 따뜻하게 입고 안전하게 이동하셔요!`;
+                }
+            } else if (currentLang === 'en') {
+                text = `Hello! The weather in ${cityData.name} is so lovely today. Remember to wear a cute jacket and enjoy your eco-friendly day!`;
+            } else if (currentLang === 'ja') {
+                text = `こんにちは！${cityData.name}の天気はとても素敵です。上着を羽織って、環境に優しい一日を過ごしましょうね！`;
+            } else {
+                text = `您好呀！${cityData.name}今天的天气非常舒适，请记得带好外套，一起开心地守护我们的地球哦！`;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = currentLang === 'ko' ? 'ko-KR' : currentLang === 'en' ? 'en-US' : currentLang === 'ja' ? 'ja-JP' : 'zh-CN';
+            utterance.rate = 0.95; // 다정하고 상냥하게 들리는 차분한 속도
+            utterance.pitch = 1.45; // 한층 더 귀엽고 상냥한 고음 톤 적용
+
+            const voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length > 0) {
+                const targetVoice = voices.find(v => v.lang.includes(utterance.lang) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Siri') || v.name.includes('Yuri') || v.name.includes('Heami'))) || voices.find(v => v.lang.includes(utterance.lang)) || voices[0];
+                if (targetVoice) utterance.voice = targetVoice;
+            }
+
+            utterance.onstart = () => {
+                showToast("귀엽고 상냥한 목소리로 행동요령을 안내해 드릴게요 ✨", true);
+            };
+            utterance.onerror = (e) => {
+                console.debug("TTS 오류 무시:", e);
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 하단 토스트 메시지 출력
+        let toastTimer = null;
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-msg');
+
+            if (!toast || !icon || !msgEl) return;
+
+            msgEl.textContent = msg;
+            icon.className = isSuccess
+                ? "fa-solid fa-circle-check text-emerald-400 text-xl"
+                : "fa-solid fa-circle-info text-amber-400 text-xl";
+
+            toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            }, 3200);
+        }
+
+        // IP 및 GPS 기반 현재 위치 자동 감지 및 거리 계산 연동
+        async function detectLocationByIP() {
+            // 1) 브라우저 정밀 위치(GPS) 권한이 허용된 경우 우선 좌표 획득
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        userCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                        if (!document.getElementById('info-modal').classList.contains('hidden')) {
+                            switchModalTab(currentModalTab);
+                        }
+                    },
+                    () => {},
+                    { timeout: 4000 }
+                );
+            }
+
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                if (!res.ok) throw new Error('IP 위치 응답 오류');
+                const data = await res.json();
+
+                // GPS가 아직 없을 때 IP의 위도/경도 좌표를 거리 계산 기준으로 설정
+                if (!userCoords && data.latitude && data.longitude) {
+                    userCoords = { lat: Number(data.latitude), lon: Number(data.longitude) };
+                }
+                
+                const regionText = `${data.region || ''} ${data.city || ''}`.toLowerCase();
+                let matchedSido = 'jeonnam';
+                let matchedCity = 'muan';
+
+                // IP 주소의 지역명(영문/한글)을 국내 17개 시·도 및 시·군·구 데이터와 자동 매칭
+                if (regionText.includes('seoul') || regionText.includes('서울')) {
+                    matchedSido = 'seoul';
+                    if (regionText.includes('gangnam')) matchedCity = 'gangnam';
+                    else if (regionText.includes('mapo')) matchedCity = 'mapo';
+                    else if (regionText.includes('songpa')) matchedCity = 'songpa';
+                    else if (regionText.includes('yeongdeungpo')) matchedCity = 'yeongdeungpo';
+                    else if (regionText.includes('nowon')) matchedCity = 'nowon';
+                    else matchedCity = 'jongno';
+                } else if (regionText.includes('gwangju') || regionText.includes('광주')) {
+                    matchedSido = 'gwangju';
+                    if (regionText.includes('seo')) matchedCity = 'seogu';
+                    else if (regionText.includes('gwangsan')) matchedCity = 'gwangsan';
+                    else if (regionText.includes('dong')) matchedCity = 'donggu';
+                    else if (regionText.includes('nam')) matchedCity = 'namgu_gj';
+                    else matchedCity = 'bukgu';
+                } else if (regionText.includes('busan') || regionText.includes('부산')) {
+                    matchedSido = 'busan';
+                    if (regionText.includes('jung')) matchedCity = 'junggu';
+                    else if (regionText.includes('jin')) matchedCity = 'busanjin';
+                    else matchedCity = 'haeundae';
+                } else if (regionText.includes('daegu') || regionText.includes('대구')) {
+                    matchedSido = 'daegu';
+                    matchedCity = regionText.includes('suseong') ? 'suseong' : 'junggu';
+                } else if (regionText.includes('incheon') || regionText.includes('인천')) {
+                    matchedSido = 'incheon';
+                    matchedCity = regionText.includes('yeonsu') || regionText.includes('songdo') ? 'yeonsu' : 'namdong';
+                } else if (regionText.includes('daejeon') || regionText.includes('대전')) {
+                    matchedSido = 'daejeon';
+                    matchedCity = regionText.includes('yuseong') ? 'yuseong' : 'seogu';
+                } else if (regionText.includes('ulsan') || regionText.includes('울산')) {
+                    matchedSido = 'ulsan'; matchedCity = 'namgu';
+                } else if (regionText.includes('sejong') || regionText.includes('세종')) {
+                    matchedSido = 'sejong'; matchedCity = 'sejong_city';
+                } else if (regionText.includes('gyeonggi') || regionText.includes('경기') || regionText.includes('suwon') || regionText.includes('seongnam') || regionText.includes('goyang') || regionText.includes('yongin') || regionText.includes('hwaseong')) {
+                    matchedSido = 'gyeonggi';
+                    if (regionText.includes('seongnam') || regionText.includes('bundang')) matchedCity = 'seongnam';
+                    else if (regionText.includes('goyang')) matchedCity = 'goyang';
+                    else if (regionText.includes('yongin')) matchedCity = 'yongin';
+                    else if (regionText.includes('hwaseong')) matchedCity = 'hwaseong';
+                    else matchedCity = 'suwon';
+                } else if (regionText.includes('gangwon') || regionText.includes('강원') || regionText.includes('chuncheon') || regionText.includes('gangneung') || regionText.includes('wonju') || regionText.includes('sokcho')) {
+                    matchedSido = 'gangwon';
+                    if (regionText.includes('gangneung')) matchedCity = 'gangneung';
+                    else if (regionText.includes('wonju')) matchedCity = 'wonju';
+                    else if (regionText.includes('sokcho')) matchedCity = 'sokcho';
+                    else matchedCity = 'chuncheon';
+                } else if (regionText.includes('chungbuk') || regionText.includes('충북') || regionText.includes('cheongju') || regionText.includes('chungju')) {
+                    matchedSido = 'chungbuk';
+                    matchedCity = regionText.includes('chungju') ? 'chungju' : 'cheongju';
+                } else if (regionText.includes('chungnam') || regionText.includes('충남') || regionText.includes('cheonan') || regionText.includes('asan') || regionText.includes('seosan')) {
+                    matchedSido = 'chungnam';
+                    if (regionText.includes('asan')) matchedCity = 'asan';
+                    else if (regionText.includes('seosan')) matchedCity = 'seosan';
+                    else matchedCity = 'cheonan';
+                } else if (regionText.includes('jeonbuk') || regionText.includes('전북') || regionText.includes('jeonju') || regionText.includes('gunsan') || regionText.includes('iksan') || regionText.includes('jeongeup') || regionText.includes('namwon')) {
+                    matchedSido = 'jeonbuk';
+                    if (regionText.includes('gunsan')) matchedCity = 'gunsan';
+                    else if (regionText.includes('iksan')) matchedCity = 'iksan';
+                    else if (regionText.includes('jeongeup')) matchedCity = 'jeongeup';
+                    else if (regionText.includes('namwon')) matchedCity = 'namwon';
+                    else matchedCity = 'jeonju';
+                } else if (regionText.includes('jeonnam') || regionText.includes('전남') || regionText.includes('mokpo') || regionText.includes('suncheon') || regionText.includes('yeosu') || regionText.includes('naju') || regionText.includes('gwangyang') || regionText.includes('haenam') || regionText.includes('muan') || regionText.includes('damyang') || regionText.includes('wando') || regionText.includes('yeongam')) {
+                    matchedSido = 'jeonnam';
+                    if (regionText.includes('mokpo')) matchedCity = 'mokpo';
+                    else if (regionText.includes('suncheon')) matchedCity = 'suncheon';
+                    else if (regionText.includes('yeosu')) matchedCity = 'yeosu';
+                    else if (regionText.includes('naju')) matchedCity = 'naju';
+                    else if (regionText.includes('gwangyang')) matchedCity = 'gwangyang';
+                    else if (regionText.includes('haenam')) matchedCity = 'haenam';
+                    else if (regionText.includes('damyang')) matchedCity = 'damyang';
+                    else if (regionText.includes('wando')) matchedCity = 'wando';
+                    else if (regionText.includes('yeongam')) matchedCity = 'yeongam';
+                    else matchedCity = 'muan';
+                } else if (regionText.includes('gyeongbuk') || regionText.includes('경북') || regionText.includes('pohang') || regionText.includes('gyeongju') || regionText.includes('gumi') || regionText.includes('andong')) {
+                    matchedSido = 'gyeongbuk';
+                    if (regionText.includes('gyeongju')) matchedCity = 'Gyeongju';
+                    else if (regionText.includes('gumi')) matchedCity = 'gumi';
+                    else if (regionText.includes('andong')) matchedCity = 'andong';
+                    else matchedCity = 'pohang';
+                } else if (regionText.includes('gyeongnam') || regionText.includes('경남') || regionText.includes('changwon') || regionText.includes('jinju') || regionText.includes('gimhae') || regionText.includes('tongyeong')) {
+                    matchedSido = 'gyeongnam';
+                    if (regionText.includes('jinju')) matchedCity = 'jinju';
+                    else if (regionText.includes('gimhae')) matchedCity = 'gimhae';
+                    else if (regionText.includes('tongyeong')) matchedCity = 'tongyeong';
+                    else matchedCity = 'changwon';
+                } else if (regionText.includes('jeju') || regionText.includes('제주') || regionText.includes('seogwipo')) {
+                    matchedSido = 'jeju';
+                    matchedCity = regionText.includes('seogwipo') ? 'seogwipo' : 'jeju_city';
+                }
+
+                currentSido = matchedSido;
+                currentCity = matchedCity;
+                document.getElementById('sido-select').value = currentSido;
+                populateCityOptions(currentSido);
+                updateWeatherAndRegionUI();
+
+                const detectedCityName = koreaWeatherDB[currentSido].cities[currentCity].name;
+                showToast(`현재 IP 접속 위치(${detectedCityName})로 자동 설정되었습니다 📡`, true);
+            } catch (e) {
+                // IP API 차단/오프라인 환경일 경우 기본 접속 거점(전라남도 무안군)으로 자동 설정
+                currentSido = 'jeonnam';
+                currentCity = 'muan';
+                document.getElementById('sido-select').value = currentSido;
+                populateCityOptions(currentSido);
+                updateWeatherAndRegionUI();
+            }
+        }
+
+        // 초기화 실행 (DOM 로드 완료 시 즉시 실행)
+        function initApp() {
+            // 음성 목록 사전 로드
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+            applyTranslations();
+            updateCurrentDate();
+            populateCityOptions(currentSido);
+            setWeatherMode('live');
+            renderWeeklyStamps();
+            updateDashboard();
+            detectLocationByIP();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>
